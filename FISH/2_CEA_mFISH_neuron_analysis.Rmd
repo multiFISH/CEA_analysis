@@ -1,0 +1,114 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+###Call for packages
+```{r}
+library(Seurat)
+library(ggplot2)
+library(tidyverse)
+library(cowplot)
+library(scclusteval)
+packageVersion("Seurat")
+```
+
+
+```{r}
+load("/xxx.Robj")
+```
+
+#Clustering of Neurons!!!!
+###Finalize the parameters for clustering (k=45, resolution=1, use PCA to cluster)
+
+```{r}
+CEA_mFISH_neuron=subset(CEA_mFISH, ident=c(1),invert = TRUE)
+```
+
+###z-score transformation of mFISH data 
+```{r}
+CEA_mFISH_neuron<- ScaleData(CEA_mFISH_neuron)
+```
+
+### Run PCA and Non-linear dimensional reduction (tSNE) 
+```{r, fig.height=5, fig.width=7, message=FALSE, warnings=FALSE}
+
+CEA_mFISH_neuron <- RunPCA(CEA_mFISH_neuron, npcs = 29,verbose = TRUE,features=rownames(CEA_mFISH_neuron),approx=FALSE)
+ElbowPlot(CEA_mFISH_neuron,ndims=29)
+#CEA_mFISH_neuron <- RunTSNE(CEA_mFISH_neuron, dims=1:29, perplexity=50,check_duplicates = FALSE)
+CEA_mFISH_neuron <- RunUMAP(CEA_mFISH_neuron, dims=1:29,verbose=FALSE,min.dist=0.1,n.neighbors = 20L)
+```
+
+```{r}
+CEA_mFISH_neuron <- FindNeighbors(CEA_mFISH_neuron,reduction='pca',dims=1:29,k.param = 45)
+CEA_mFISH_neuron  <- FindClusters(CEA_mFISH_neuron , algorithm=2,resolution =1,)
+```
+```{r}
+DimPlot(CEA_mFISH_neuron, reduction = "umap",pt.size=0.01,label=TRUE) 
+```
+```{r,fig.width=12,fig.height=2}
+DimPlot(CEA_mFISH_neuron_new, reduction = "umap",split.by='samples',pt.size=0.1,label=TRUE) 
+```
+
+
+###For final neuron clustering, use pca as features, k. param=45, resolution=1 
+```{r}
+CEA_mFISH_neuron <- FindNeighbors(CEA_mFISH_neuron,features=markers,k.param =45)
+CEA_mFISH_neuron  <- FindClusters(CEA_mFISH_neuron , algorithm=2,resolution =1,)
+
+CEA_mFISH_neuron$orig.ident=Idents(CEA_mFISH_neuron)
+CEA_mFISH_neuron_sub=RandomSubsetData(CEA_mFISH_neuron, rate=0.8)
+CEA_mFISH_neuron_sub<- CEA_mFISH_neuron_sub%>%ScaleData()%>% FindNeighbors(features=markers,k.param =40) %>% FindClusters(algorithm=2,resolution = 1)
+PairWiseJaccardSetsHeatmap(CEA_mFISH_neuron_sub$orig.ident,CEA_mFISH_neuron_sub@active.ident, best_match = TRUE)
+```
+#  Determine the stability of clusters
+```{r}
+
+CEA_mFISH_neuron <- FindNeighbors(CEA_mFISH_neuron,feaetures=markers,k.param =45)
+CEA_mFISH_neuron  <- FindClusters(CEA_mFISH_neuron , algorithm=2,resolution =1,)
+
+CEA_mFISH_neuron$orig.ident=Idents(CEA_mFISH_neuron)
+a=list()
+b=list()
+
+x=1
+repeat {
+CEA_mFISH_neuron_sub=RandomSubsetData(CEA_mFISH_neuron, rate=0.9)
+  CEA_mFISH_neuron_sub<- CEA_mFISH_neuron_sub%>%ScaleData()%>% FindNeighbors(features=markers,k.param =40) %>% FindClusters(algorithm=2,resolution =1)
+
+a=append(a,list(CEA_mFISH_neuron_sub$orig.ident))
+b=append(b,list(CEA_mFISH_neuron_sub@active.ident))
+
+rm(CEA_mFISH_neuron_sub)
+x=x+1
+if (x == 51){
+break
+}
+}
+
+JaccardRainCloudPlot(a,b)+ geom_hline(yintercept = c(0.5),linetype = 2) +ylim(0,1)
+```
+
+# Merge confusing clusters, merge 19 to 5, it is the BLA cluster. 
+```{r,fig.height=2, fig.width=2.5}
+CEA_mFISH_neuron_new=RenameIdents(CEA_mFISH_neuron, '19' = '5')
+CEA_mFISH_neuron_new <- ReorderIdent(CEA_mFISH_neuron_new, var='nCount_RNA', reverse=TRUE, reorder.numeric = TRUE)
+DimPlot(CEA_mFISH_neuron_new, reduction = "umap",pt.size=0.01,label=TRUE) 
+```
+#Refine clusters 3, 7 and 15 (They share similar gene expression)
+```{r}
+C=subset(CEA_mFISH_neuron_new, ident=c('3','7','15'))
+C <- C %>% FindNeighbors() %>%FindClusters(algorithm=2,resolution =0.1)
+CEA_mFISH_neuron_new <-SetIdent(CEA_mFISH_neuron_new, cells=WhichCells(C,ident='0'), value='15')
+CEA_mFISH_neuron_new <-SetIdent(CEA_mFISH_neuron_new, cells=WhichCells(C,ident='1'), value='3')
+CEA_mFISH_neuron_new <-SetIdent(CEA_mFISH_neuron_new, cells=WhichCells(C,ident='2'), value='7')
+CEA_mFISH_neuron_new=RenameIdents(CEA_mFISH_neuron_new, '24' = '22')
+CEA_mFISH_neuron_new=RenameIdents(CEA_mFISH_neuron_new, '23' = '22')
+CEA_mFISH_neuron_new <- ReorderIdent(CEA_mFISH_neuron_new, var='nCount_RNA', reverse=TRUE, reorder.numeric = TRUE)
+DimPlot(CEA_mFISH_neuron_new, reduction = "umap",pt.size=0.01,label=TRUE)
+```
+
+# Save Seurat Object
+```{r,fig.height=2, fig.width=2.5}
+save(CEA_mFISH_neuron_new,file="/XXXX.Robj")
+```

@@ -1,0 +1,118 @@
+---
+title: "Morphology analysis_CEA_FISH_data"
+output: html_notebook
+Data: 02/28/2022
+---
+
+
+```{r}
+library(Seurat)
+load("/Users/wangy6/Desktop/DATA/MultiFISH/CTB experiments/CEA_mFISH/R_Seurat_analysis/V3_Nov27/CEA_mFISH_neuron_new_2021Dec31.Robj")
+```
+
+```{r}
+DimPlot(CEA_mFISH_neuron_new,label=TRUE)
+```
+## Statistical test for cell area (t.test compared to population mean)
+```{r,fig.width=20,fig.height=3}
+id =CEA_mFISH_neuron_new@active.ident
+S =CEA_mFISH_neuron_new@meta.data$area
+cea.S=cbind(id, S)
+res.aov <- aov(formula=S~as.factor(id), data = as.data.frame(cea.S))
+# Summary of the analysis
+summary(res.aov)
+TukeyHSD(res.aov)
+
+compare_means(S~id,  data =  as.data.frame(cea.S),
+              ref.group = ".all.", method = "t.test")
+
+ggsave("/Volumes/multifish/CEA_analysis/figures/neuron_morph/cea_area.pdf", VlnPlot(CEA_mFISH_neuron_new,feature='area', pt.size=-1, ncol=1) + scale_y_continuous(limits = c(0,7000))+theme(axis.text.x = element_text(size=40, angle=0,hjust=0.5), axis.text.y = element_text(size=40), axis.title=element_blank(), legend.position = 'none', title=element_blank())+
+  geom_hline(yintercept = mean(S), linetype = 2)+      # Add horizontal line at base mean     
+stat_compare_means(label = "p.signif", method = "t.test",
+                     ref.group = ".all.", ,hide.ns = TRUE, size=10, label.y.npc =rep(0.9,22)),width = 20, height = 3,dpi = 300, units = "in")         
+```
+
+# Effect size for cell area (Cohen's d, https://rcompanion.org/handbook/I_03.html)
+```{r}
+
+library(lsr)
+for (i in 1:22){
+  print(i)
+  print(cohensD(x=subset(x = CEA_mFISH_neuron_new, idents = c(toString(i)),invert=TRUE)$area,y=subset(x = CEA_mFISH_neuron_new, idents = c(toString(i)))$area))
+}
+
+```
+## Statistical test for cell solidity (wilcoxon.test compared to population mean)
+```{r,fig.width=20,fig.height=6}
+id =CEA_mFISH_neuron_new@active.ident
+S =CEA_mFISH_neuron_new@meta.data$solidity
+cea.S=cbind(id, S)
+res.aov <- aov(formula=S~as.factor(id), data = as.data.frame(cea.S))
+# Summary of the analysis
+summary(res.aov)
+TukeyHSD(res.aov)
+
+compare_means(S~id,  data =  as.data.frame(cea.S),
+              ref.group = ".all.", method = "wilcox.test",
+p.adjust.method='BH')
+
+ggsave("/Volumes/multifish/CEA_analysis/figures/neuron_morph/cea_solidity.pdf", VlnPlot(CEA_mFISH_neuron_new,feature='solidity', pt.size=-1, ncol=1) + scale_y_continuous(limits = c(0,1))+theme(axis.text.x = element_text(size=40, angle=0,hjust=0.5), axis.text.y = element_text(size=40), axis.title=element_blank(), legend.position = 'none', title=element_blank())+
+  geom_hline(yintercept = mean(S), linetype = 2)+      # Add horizontal line at base mean     
+stat_compare_means(label = "p.signif", method = "wilcoxon.test",
+                     ref.group = ".all.", ,hide.ns = TRUE, size=12, label.y.npc =c(.1,.1,.1,.1,.1,.1,.1,.1,.1,.1,.1,.1,.1,.1,.1,.1,.1,.1,.1,.1,.1,.1,.1,.1,.1,.1,.1,.1)),width = 20, height = 3,dpi = 300, units = "in")       
+
+```
+
+# Effect size for cell solidity (wilcoxon's , https://rcompanion.org/handbook/I_03.html)
+```{r}
+library(rcompanion)
+library(effsize)
+
+for (i in 1:22){
+  id =CEA_mFISH_neuron_new@active.ident
+  S =CEA_mFISH_neuron_new$solidity
+  ex.S=cbind(id, S)
+  ex.S=as.data.frame(ex.S)
+  ex.S[ex.S$id!=i,]$id=0
+  print(i)
+  print(wilcoxonRG(x=ex.S$S,g=ex.S$id))
+}
+
+```
+
+## Statistical test for cell min axis-to-max axis ratio (wilcoxon.test compared to population mean)
+```{r,fig.width=20,fig.height=3}
+id =CEA_mFISH_neuron_new@active.ident
+S =CEA_mFISH_neuron_new@meta.data$aspect_ratio
+cea.S=cbind(id, S)
+res.aov <- aov(formula=S~as.factor(id), data = as.data.frame(cea.S))
+# Summary of the analysis
+summary(res.aov)
+TukeyHSD(res.aov)
+
+compare_means(S~id,  data =  as.data.frame(cea.S),
+              ref.group = ".all.", method = "wilcox.test")
+
+ggsave("/Volumes/multifish/CEA_analysis/figures/neuron_morph/cea_aspect_ratio.pdf", VlnPlot(CEA_mFISH_neuron_new,feature='aspect_ratio', pt.size=-1, ncol=1) + scale_y_continuous(limits = c(0,1))+theme(axis.text.x = element_text(size=40, angle=0,hjust=0.5), axis.text.y = element_text(size=40), axis.title=element_blank(), legend.position = 'none', title=element_blank())+
+  geom_hline(yintercept = mean(S), linetype = 2)+      # Add horizontal line at base mean     
+stat_compare_means(label = "p.signif", method = "wilcox.test",
+                     ref.group = ".all.", ,hide.ns = TRUE, size=10, label.y.npc =rep(0.1,22)),width = 20, height = 3,dpi = 300, units = "in")       
+```
+
+# Effect size for cell aspect_ratio (wilcoxon's , https://rcompanion.org/handbook/I_03.html)
+```{r}
+library(rcompanion)
+library(effsize)
+
+for (i in 1:22){
+  id =CEA_mFISH_neuron_new@active.ident
+  S =CEA_mFISH_neuron_new$aspect_ratio
+  ex.S=cbind(id, S)
+  ex.S=as.data.frame(ex.S)
+  ex.S[ex.S$id!=i,]$id=0
+  print(i)
+  print(wilcoxonRG(x=ex.S$S,g=ex.S$id))
+}
+
+
+```
