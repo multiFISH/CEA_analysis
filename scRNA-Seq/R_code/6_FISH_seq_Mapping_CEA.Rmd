@@ -1,0 +1,122 @@
+
+---
+title: "Map cell types"
+output: html_notebook
+---
+
+
+```{r}
+suppressPackageStartupMessages({
+  library(mfishtools)    # This library!
+  library(gplots)        # This is for plotting gene panels only.
+  library(scrattch.vis)  # This is for plotting gene panels only.
+  library(matrixStats)   # For rowMedians function, which is fast
+  library(tasic2016data) # For the data
+})
+options(stringsAsFactors = FALSE)  # IMPORTANT
+print("Libraries loaded.")
+```
+
+```{r}
+library(Seurat)
+load("/Users/wangy6/Desktop/DATA/MultiFISH/CTB experiments/CEA_mFISH/R_Seurat_analysis/V3_Nov27/CEA_mFISH_neuron_new_2021Dec31.Robj")
+load('/Users/wangy6/Desktop/DATA/CEA_RNAseq/CEA_2021_analysis/cea_neuron_v3_final_Dec2021.proj')
+```
+
+```{r}
+seq_ident=as.data.frame(cea_neuron_new_V2@active.ident)
+colnames(seq_ident) <- "Ident"
+
+```
+
+```{r}
+seq_count=subset(x = cea_neuron_new_V2@assays$RNA)
+seq_count= as.matrix(seq_count@counts)
+```
+
+```{r}
+fish_count = subset(x = CEA_mFISH_neuron_new@assays$RNA)
+fish_count  = as.matrix(fish_count@counts)
+fish_ident=as.data.frame(CEA_mFISH_neuron_new@active.ident)
+colnames(fish_ident) <- "Ident"
+```
+
+
+```{r}
+fish_count=fish_count[,rownames(fish_ident)]
+head(rownames(fish_ident))
+head(colnames(fish_count))
+```
+
+```{r}
+cl   = seq_ident
+cl <- cl[match(colnames(seq_count),rownames(cl)),]
+names(cl)=rownames(seq_ident)
+normDat = log2(seq_count+1)
+```
+
+
+```{r}
+scDat=seq_count[rownames(fish_count),]
+scDat=t(scale(t(scDat)))
+fish_count_norm=t(scale(t(fish_count)))
+#propExpr   = do.call("cbind", tapply(names(cl), cl, function(x) rowMeans(seq_count[,x]>1))) 
+scmeanExpr = do.call("cbind", tapply(names(cl), cl, function(x) rowMeans(scDat[,x]))) 
+#medianExpr = do.call("cbind", tapply(names(cl), cl, function(x) rowMedians(scDat[,x]))) 
+```
+
+## Write my own correlation function to map scRNAseq and mFISH 
+## (make sure the function you used from mfishtools is correct)
+
+#Parameters: z-score transform FISH data, z-score normalize sequencing data 
+```{r}
+gene=rownames(CEA_mFISH_neuron_new)
+
+#gene=c("Oprk1","Vipr2","Scn4b","Npy1r","Sema3c", "Drd2","Vdr","Gpx3","Dlk1","Vgf", "Ppp1r1b","Nefm","Cartpt" ,
+# "Prkcd" ,"Tac1" ,"Penk","Gal","Sst" ,"Pdyn", "Nts", "Tac2",   
+# "Ebf1","Crym","Cyp26b1" ,"Crh" )
+
+correlation=cor(as.matrix(scmeanExpr[gene,]), as.matrix(fish_count_norm[gene,]))
+predicted_ident=t(as.matrix(apply(correlation, 2,function(x) {
+  a=which.max(x)
+  b=max(x)
+  c(a,b)
+  } )))
+
+```
+
+
+```{r,fig.height=3,fig.width=4}
+library(tidyverse)
+bb=predicted_ident
+
+bb[,1]=as.numeric(predicted_ident[,1])
+bb[bb[,2]<0.4]='NA'
+
+CEA_mFISH_neuron_new <- AddMetaData(
+    object = CEA_mFISH_neuron_new ,
+    metadata =bb[WhichCells(CEA_mFISH_neuron_new),1],
+    col.name = 'identity_scRNAseq')
+
+table(CEA_mFISH_neuron_new$identity_scRNAseq)
+
+DimPlot(CEA_mFISH_neuron_new,reduction = "umap",  label=TRUE,group.by='identity_scRNAseq', pt.size=0.1)
+
+```
+
+```{r}
+aa=as.matrix(CEA_mFISH_neuron_new@active.ident)
+write.csv(aa,"/Volumes/multifish/CEA_analysis/figures/scRNAseq/mFISH_identity_v4.csv", row.names = TRUE)
+write.csv(bb,"/Volumes/multifish/CEA_analysis/figures/scRNAseq/predicted_scRNAseq_identity_v5.csv", row.names = TRUE)
+```
+
+
+
+
+
+
+
+
+
+
+

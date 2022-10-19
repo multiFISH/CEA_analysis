@@ -1,0 +1,1483 @@
+---
+title: "CEA_empty_well_munging"
+author: "Trace"
+date: "6/20/2018"
+output: html_document
+---
+
+
+#Extract the cell number associated with the first Plate: Plate_Q5_144 
+```{r}
+#retrive cells from this Plate
+Plate_Q5_144_ID = which(cea.meta$Sample== "Plate_Q5_144")
+Plate_Q5_144_meta = cea.meta[Plate_Q5_144_ID ,]
+Plate_Q5_144_cells = rownames(Plate_Q5_144_meta)
+length(Plate_Q5_144_cells)
+
+#ID the empty wells
+Plate_Q5_144_ID_empty = which(Plate_Q5_144_meta[,5] == "empty")
+length(Plate_Q5_144_ID_empty)
+
+#ID the ercc only wells
+Plate_Q5_144_ID_ercc = which(Plate_Q5_144_meta[,5] == "ERCC")
+length(Plate_Q5_144_ID_ercc)
+
+#ID the qRNA only wells
+Plate_Q5_144_ID_qRNA = which(Plate_Q5_144_meta[,5] == "qRNA")
+length(Plate_Q5_144_ID_qRNA)
+
+#ID the u only wells
+Plate_Q5_144_ID_u = which(Plate_Q5_144_meta[,5] == "u")
+length(Plate_Q5_144_ID_u)
+
+#ID the c only wells
+Plate_Q5_144_ID_c = which(Plate_Q5_144_meta[,5] == "c")
+length(Plate_Q5_144_ID_c)
+
+#ID the CEA signal only wells
+Plate_Q5_144_ID_CEA = which(Plate_Q5_144_meta[,5] == "CEA")
+length(Plate_Q5_144_ID_CEA)
+
+#concatenate the empty + ercc + qRNA wells into single negative groups
+Plate_Q5_144_ID_neg = c(Plate_Q5_144_ID_empty,Plate_Q5_144_ID_ercc, Plate_Q5_144_ID_qRNA )
+length(Plate_Q5_144_ID_neg)
+
+#use IDs from above to subset data matrix for this Plate
+Plate_Q5_144_all_data = cea.genes[,Plate_Q5_144_cells]
+Plate_Q5_144_CEA_data = Plate_Q5_144_all_data[,Plate_Q5_144_ID_CEA]
+Plate_Q5_144_neg_data = Plate_Q5_144_all_data[,Plate_Q5_144_ID_neg]
+
+#SUM counts across cea neg cells for every gene
+Plate_Q5_144_neg_data_SUM = as.matrix(rowSums(Plate_Q5_144_neg_data))
+
+#AVERAGE counts across cea neg cells for every gene
+Plate_Q5_144_neg_data_MEAN = as.matrix(rowMeans(Plate_Q5_144_neg_data))
+
+#subtract these summed counts from cea other cells in the verified CEA dataset
+Plate_Q5_144_subtracted = Plate_Q5_144_CEA_data - Plate_Q5_144_neg_data_MEAN 
+
+#convert cea negative values to zeros
+Plate_Q5_144_subtracted[Plate_Q5_144_subtracted<0]  <- 0
+
+#rename matrix for easy handling
+Plate_Q5_144_CEA_final = Plate_Q5_144_subtracted
+
+#remove files that wont be used again
+remove(Plate_Q5_144_neg_data)
+remove(Plate_Q5_144_all_data)
+remove(Plate_Q5_144_CEA_data)
+remove(Plate_Q5_144_neg_data_SUM)
+remove(Plate_Q5_144_neg_data_MEAN)
+remove(Plate_Q5_144_ID_empty)
+remove(Plate_Q5_144_ID_ercc)
+remove(Plate_Q5_144_ID_c)
+remove(Plate_Q5_144_ID_u)
+remove(Plate_Q5_144_ID_neg)
+remove(Plate_Q5_144_ID_CEA)
+remove(Plate_Q5_144_ID)
+remove(Plate_Q5_144_meta)
+remove(Plate_Q5_144_subtracted)
+remove(Plate_Q5_144_cells)
+remove(Plate_Q5_144_ID_qRNA)
+```
+
+
+
+#Extract the cell number associated with the first Plate: Plate_Q5_146 
+```{r}
+#retrive cells from this Plate
+Plate_Q5_146_ID = which(cea.meta$Sample== "Plate_Q5_146")
+Plate_Q5_146_meta = cea.meta[Plate_Q5_146_ID ,]
+Plate_Q5_146_cells = rownames(Plate_Q5_146_meta)
+length(Plate_Q5_146_cells)
+
+#ID the empty wells
+Plate_Q5_146_ID_empty = which(Plate_Q5_146_meta[,5] == "empty")
+length(Plate_Q5_146_ID_empty)
+
+#ID the ercc only wells
+Plate_Q5_146_ID_ercc = which(Plate_Q5_146_meta[,5] == "ERCC")
+length(Plate_Q5_146_ID_ercc)
+
+#ID the qRNA only wells
+Plate_Q5_146_ID_qRNA = which(Plate_Q5_146_meta[,5] == "qRNA")
+length(Plate_Q5_146_ID_qRNA)
+
+#ID the u only wells
+Plate_Q5_146_ID_u = which(Plate_Q5_146_meta[,5] == "u")
+length(Plate_Q5_146_ID_u)
+
+#ID the c only wells
+Plate_Q5_146_ID_c = which(Plate_Q5_146_meta[,5] == "c")
+length(Plate_Q5_146_ID_c)
+
+#ID the CEA signal only wells
+Plate_Q5_146_ID_CEA = which(Plate_Q5_146_meta[,5] == "CEA")
+length(Plate_Q5_146_ID_CEA)
+
+#concatenate the empty + ercc + qRNA wells into single negative groups
+Plate_Q5_146_ID_neg = c(Plate_Q5_146_ID_empty,Plate_Q5_146_ID_ercc, Plate_Q5_146_ID_qRNA)
+length(Plate_Q5_146_ID_neg)
+
+#use IDs from above to subset data matrix for this Plate
+Plate_Q5_146_all_data = cea.genes[,Plate_Q5_146_cells]
+Plate_Q5_146_CEA_data = Plate_Q5_146_all_data[,Plate_Q5_146_ID_CEA]
+Plate_Q5_146_neg_data = Plate_Q5_146_all_data[,Plate_Q5_146_ID_neg]
+
+#SUM counts across cea neg cells for every gene
+Plate_Q5_146_neg_data_SUM = as.matrix(rowSums(Plate_Q5_146_neg_data))
+
+#AVERAGE counts across cea neg cells for every gene
+Plate_Q5_146_neg_data_MEAN = as.matrix(rowMeans(Plate_Q5_146_neg_data))
+
+#subtract these summed counts from cea other cells in the verified CEA dataset
+Plate_Q5_146_subtracted = Plate_Q5_146_CEA_data - Plate_Q5_146_neg_data_MEAN 
+
+#convert cea negative values to zeros
+Plate_Q5_146_subtracted[Plate_Q5_146_subtracted<0]  <- 0
+
+#rename matrix for easy handling
+Plate_Q5_146_CEA_final = Plate_Q5_146_subtracted
+
+#remove files that wont be used again
+remove(Plate_Q5_146_neg_data)
+remove(Plate_Q5_146_all_data)
+remove(Plate_Q5_146_CEA_data)
+remove(Plate_Q5_146_neg_data_SUM)
+remove(Plate_Q5_146_neg_data_MEAN)
+remove(Plate_Q5_146_ID_empty)
+remove(Plate_Q5_146_ID_ercc)
+remove(Plate_Q5_146_ID_c)
+remove(Plate_Q5_146_ID_u)
+remove(Plate_Q5_146_ID_neg)
+remove(Plate_Q5_146_ID_CEA)
+remove(Plate_Q5_146_ID)
+remove(Plate_Q5_146_meta)
+remove(Plate_Q5_146_subtracted)
+remove(Plate_Q5_146_cells)
+remove(Plate_Q5_146_ID_qRNA)
+```
+
+
+#Extract the cell number associated with the first Plate: Plate_Q5_148 
+```{r}
+#retrive cells from this Plate
+Plate_Q5_148_ID = which(cea.meta$Sample== "Plate_Q5_148")
+Plate_Q5_148_meta = cea.meta[Plate_Q5_148_ID ,]
+Plate_Q5_148_cells = rownames(Plate_Q5_148_meta)
+length(Plate_Q5_148_cells)
+
+#ID the empty wells
+Plate_Q5_148_ID_empty = which(Plate_Q5_148_meta[,5] == "empty")
+length(Plate_Q5_148_ID_empty)
+
+#ID the ercc only wells
+Plate_Q5_148_ID_ercc = which(Plate_Q5_148_meta[,5] == "ERCC")
+length(Plate_Q5_148_ID_ercc)
+
+#ID the qRNA only wells
+Plate_Q5_148_ID_qRNA = which(Plate_Q5_148_meta[,5] == "qRNA")
+length(Plate_Q5_148_ID_qRNA)
+
+#ID the u only wells
+#Plate_Q5_148_ID_u = which(Plate_Q5_148_meta[,5] == "u")
+#length(Plate_Q5_148_ID_u)
+
+#ID the c only wells
+#Plate_Q5_148_ID_c = which(Plate_Q5_148_meta[,5] == "c")
+#length(Plate_Q5_148_ID_c)
+
+#ID the CEA signal only wells
+Plate_Q5_148_ID_CEA = which(Plate_Q5_148_meta[,5] == "CEA")
+length(Plate_Q5_148_ID_CEA)
+
+#concatenate the empty + ercc + qRNA wells into single negative groups
+Plate_Q5_148_ID_neg = c(Plate_Q5_148_ID_empty,Plate_Q5_148_ID_ercc, Plate_Q5_148_ID_qRNA )
+length(Plate_Q5_148_ID_neg)
+
+#use IDs from above to subset data matrix for this Plate
+Plate_Q5_148_all_data = cea.genes[,Plate_Q5_148_cells]
+Plate_Q5_148_CEA_data = Plate_Q5_148_all_data[,Plate_Q5_148_ID_CEA]
+Plate_Q5_148_neg_data = Plate_Q5_148_all_data[,Plate_Q5_148_ID_neg]
+
+#SUM counts across cea neg cells for every gene
+#Plate_Q5_148_neg_data_SUM = as.matrix(rowSums(Plate_Q5_148_neg_data))
+
+#AVERAGE counts across cea neg cells for every gene
+Plate_Q5_148_neg_data_MEAN = as.matrix(rowMeans(Plate_Q5_148_neg_data))
+
+#subtract these summed counts from cea other cells in the verified CEA dataset
+Plate_Q5_148_subtracted = Plate_Q5_148_CEA_data - Plate_Q5_148_neg_data_MEAN 
+
+#convert cea negative values to zeros
+Plate_Q5_148_subtracted[Plate_Q5_148_subtracted<0]  <- 0
+
+#rename matrix for easy handling
+Plate_Q5_148_CEA_final = Plate_Q5_148_subtracted
+
+#remove files that wont be used again
+remove(Plate_Q5_148_neg_data)
+remove(Plate_Q5_148_all_data)
+remove(Plate_Q5_148_CEA_data)
+#remove(Plate_Q5_148_neg_data_SUM)
+remove(Plate_Q5_148_neg_data_MEAN)
+remove(Plate_Q5_148_ID_empty)
+remove(Plate_Q5_148_ID_ercc)
+#remove(Plate_Q5_148_ID_c)
+#remove(Plate_Q5_148_ID_u)
+remove(Plate_Q5_148_ID_neg)
+remove(Plate_Q5_148_ID_CEA)
+remove(Plate_Q5_148_ID)
+remove(Plate_Q5_148_meta)
+remove(Plate_Q5_148_subtracted)
+remove(Plate_Q5_148_cells)
+remove(Plate_Q5_148_ID_qRNA)
+```
+
+
+
+#Extract the cell number associated with the first Plate: Plate_Q5_154 
+```{r}
+#retrive cells from this Plate
+Plate_Q5_154_ID = which(cea.meta$Sample== "Plate_Q5_154")
+Plate_Q5_154_meta = cea.meta[Plate_Q5_154_ID ,]
+Plate_Q5_154_cells = rownames(Plate_Q5_154_meta)
+length(Plate_Q5_154_cells)
+
+#ID the empty wells
+Plate_Q5_154_ID_empty = which(Plate_Q5_154_meta[,5] == "empty")
+length(Plate_Q5_154_ID_empty)
+
+#ID the ercc only wells
+Plate_Q5_154_ID_ercc = which(Plate_Q5_154_meta[,5] == "ERCC")
+length(Plate_Q5_154_ID_ercc)
+
+#ID the qRNA only wells
+Plate_Q5_154_ID_qRNA = which(Plate_Q5_154_meta[,5] == "qRNA")
+length(Plate_Q5_154_ID_qRNA)
+
+#ID the u only wells
+#Plate_Q5_154_ID_u = which(Plate_Q5_154_meta[,5] == "u")
+#length(Plate_Q5_154_ID_u)
+
+#ID the c only wells
+#Plate_Q5_154_ID_c = which(Plate_Q5_154_meta[,5] == "c")
+#length(Plate_Q5_154_ID_c)
+
+#ID the CEA signal only wells
+Plate_Q5_154_ID_CEA = which(Plate_Q5_154_meta[,5] == "CEA")
+length(Plate_Q5_154_ID_CEA)
+
+#concatenate the empty + ercc + qRNA wells into single negative groups
+Plate_Q5_154_ID_neg = c(Plate_Q5_154_ID_empty,Plate_Q5_154_ID_ercc, Plate_Q5_154_ID_qRNA)
+length(Plate_Q5_154_ID_neg)
+
+#use IDs from above to subset data matrix for this Plate
+Plate_Q5_154_all_data = cea.genes[,Plate_Q5_154_cells]
+Plate_Q5_154_CEA_data = Plate_Q5_154_all_data[,Plate_Q5_154_ID_CEA]
+Plate_Q5_154_neg_data = Plate_Q5_154_all_data[,Plate_Q5_154_ID_neg]
+
+#SUM counts across cea neg cells for every gene
+#Plate_Q5_154_neg_data_SUM = as.matrix(rowSums(Plate_Q5_154_neg_data))
+
+#AVERAGE counts across cea neg cells for every gene
+Plate_Q5_154_neg_data_MEAN = as.matrix(rowMeans(Plate_Q5_154_neg_data))
+
+#subtract these summed counts from cea other cells in the verified CEA dataset
+Plate_Q5_154_subtracted = Plate_Q5_154_CEA_data - Plate_Q5_154_neg_data_MEAN 
+
+#convert cea negative values to zeros
+Plate_Q5_154_subtracted[Plate_Q5_154_subtracted<0]  <- 0
+
+#rename matrix for easy handling
+Plate_Q5_154_CEA_final = Plate_Q5_154_subtracted
+
+#remove files that wont be used again
+remove(Plate_Q5_154_neg_data)
+remove(Plate_Q5_154_all_data)
+remove(Plate_Q5_154_CEA_data)
+#remove(Plate_Q5_154_neg_data_SUM)
+remove(Plate_Q5_154_neg_data_MEAN)
+remove(Plate_Q5_154_ID_empty)
+remove(Plate_Q5_154_ID_ercc)
+#remove(Plate_Q5_154_ID_c)
+#remove(Plate_Q5_154_ID_u)
+remove(Plate_Q5_154_ID_neg)
+remove(Plate_Q5_154_ID_CEA)
+remove(Plate_Q5_154_ID)
+remove(Plate_Q5_154_meta)
+remove(Plate_Q5_154_subtracted)
+remove(Plate_Q5_154_cells)
+remove(Plate_Q5_154_ID_qRNA)
+```
+
+
+
+#Extract the cell number associated with the first Plate: Plate_Q5_158 
+```{r}
+#retrive cells from this Plate
+Plate_Q5_158_ID = which(cea.meta$Sample== "Plate_Q5_158")
+Plate_Q5_158_meta = cea.meta[Plate_Q5_158_ID ,]
+Plate_Q5_158_cells = rownames(Plate_Q5_158_meta)
+length(Plate_Q5_158_cells)
+
+#ID the empty wells
+Plate_Q5_158_ID_empty = which(Plate_Q5_158_meta[,5] == "empty")
+length(Plate_Q5_158_ID_empty)
+
+#ID the ercc only wells
+Plate_Q5_158_ID_ercc = which(Plate_Q5_158_meta[,5] == "ERCC")
+length(Plate_Q5_158_ID_ercc)
+
+#ID the qRNA only wells
+Plate_Q5_158_ID_qRNA = which(Plate_Q5_158_meta[,5] == "qRNA")
+length(Plate_Q5_158_ID_qRNA)
+
+#ID the u only wells
+#Plate_Q5_158_ID_u = which(Plate_Q5_158_meta[,5] == "u")
+#length(Plate_Q5_158_ID_u)
+
+#ID the c only wells
+#Plate_Q5_158_ID_c = which(Plate_Q5_158_meta[,5] == "c")
+#length(Plate_Q5_158_ID_c)
+
+#ID the CEA signal only wells
+Plate_Q5_158_ID_CEA = which(Plate_Q5_158_meta[,5] == "CEA")
+length(Plate_Q5_158_ID_CEA)
+
+#concatenate the empty + ercc + qRNA wells into single negative groups
+Plate_Q5_158_ID_neg = c(Plate_Q5_158_ID_empty,Plate_Q5_158_ID_ercc, Plate_Q5_158_ID_qRNA )
+length(Plate_Q5_158_ID_neg)
+
+#use IDs from above to subset data matrix for this Plate
+Plate_Q5_158_all_data = cea.genes[,Plate_Q5_158_cells]
+Plate_Q5_158_CEA_data = Plate_Q5_158_all_data[,Plate_Q5_158_ID_CEA]
+Plate_Q5_158_neg_data = Plate_Q5_158_all_data[,Plate_Q5_158_ID_neg]
+
+#SUM counts across cea neg cells for every gene
+#Plate_Q5_158_neg_data_SUM = as.matrix(rowSums(Plate_Q5_158_neg_data))
+
+#AVERAGE counts across cea neg cells for every gene
+Plate_Q5_158_neg_data_MEAN = as.matrix(rowMeans(Plate_Q5_158_neg_data))
+
+#subtract these summed counts from cea other cells in the verified CEA dataset
+Plate_Q5_158_subtracted = Plate_Q5_158_CEA_data - Plate_Q5_158_neg_data_MEAN 
+
+#convert cea negative values to zeros
+Plate_Q5_158_subtracted[Plate_Q5_158_subtracted<0]  <- 0
+
+#rename matrix for easy handling
+Plate_Q5_158_CEA_final = Plate_Q5_158_subtracted
+
+#remove files that wont be used again
+remove(Plate_Q5_158_neg_data)
+remove(Plate_Q5_158_all_data)
+remove(Plate_Q5_158_CEA_data)
+#remove(Plate_Q5_158_neg_data_SUM)
+remove(Plate_Q5_158_neg_data_MEAN)
+remove(Plate_Q5_158_ID_empty)
+remove(Plate_Q5_158_ID_ercc)
+#remove(Plate_Q5_158_ID_c)
+#remove(Plate_Q5_158_ID_u)
+remove(Plate_Q5_158_ID_neg)
+remove(Plate_Q5_158_ID_CEA)
+remove(Plate_Q5_158_ID)
+remove(Plate_Q5_158_meta)
+remove(Plate_Q5_158_subtracted)
+remove(Plate_Q5_158_cells)
+remove(Plate_Q5_158_ID_qRNA)
+```
+
+
+#Extract the cell number associated with the first Plate: Plate_Q6_145 
+```{r}
+#retrive cells from this Plate
+Plate_Q6_145_ID = which(cea.meta$Sample== "Plate_Q6_145")
+Plate_Q6_145_meta = cea.meta[Plate_Q6_145_ID ,]
+Plate_Q6_145_cells = rownames(Plate_Q6_145_meta)
+length(Plate_Q6_145_cells)
+
+#ID the empty wells
+Plate_Q6_145_ID_empty = which(Plate_Q6_145_meta[,5] == "empty")
+length(Plate_Q6_145_ID_empty)
+
+#ID the ercc only wells
+Plate_Q6_145_ID_ercc = which(Plate_Q6_145_meta[,5] == "ERCC")
+length(Plate_Q6_145_ID_ercc)
+
+#ID the qRNA only wells
+Plate_Q6_145_ID_qRNA = which(Plate_Q6_145_meta[,5] == "qRNA")
+length(Plate_Q6_145_ID_qRNA)
+
+#ID the u only wells
+#Plate_Q6_145_ID_u = which(Plate_Q6_145_meta[,5] == "u")
+#length(Plate_Q6_145_ID_u)
+
+#ID the c only wells
+#Plate_Q6_145_ID_c = which(Plate_Q6_145_meta[,5] == "c")
+#length(Plate_Q6_145_ID_c)
+
+#ID the CEA signal only wells
+Plate_Q6_145_ID_CEA = which(Plate_Q6_145_meta[,5] == "CEA")
+length(Plate_Q6_145_ID_CEA)
+
+#concatenate the empty + ercc + qRNA wells into single negative groups
+Plate_Q6_145_ID_neg = c(Plate_Q6_145_ID_empty,Plate_Q6_145_ID_ercc, Plate_Q6_145_ID_qRNA)
+length(Plate_Q6_145_ID_neg)
+
+#use IDs from above to subset data matrix for this Plate
+Plate_Q6_145_all_data = cea.genes[,Plate_Q6_145_cells]
+Plate_Q6_145_CEA_data = Plate_Q6_145_all_data[,Plate_Q6_145_ID_CEA]
+Plate_Q6_145_neg_data = Plate_Q6_145_all_data[,Plate_Q6_145_ID_neg]
+
+#SUM counts across cea neg cells for every gene
+#Plate_Q6_145_neg_data_SUM = as.matrix(rowSums(Plate_Q6_145_neg_data))
+
+#AVERAGE counts across cea neg cells for every gene
+Plate_Q6_145_neg_data_MEAN = as.matrix(rowMeans(Plate_Q6_145_neg_data))
+
+#subtract these summed counts from cea other cells in the verified CEA dataset
+Plate_Q6_145_subtracted = Plate_Q6_145_CEA_data - Plate_Q6_145_neg_data_MEAN 
+
+#convert cea negative values to zeros
+Plate_Q6_145_subtracted[Plate_Q6_145_subtracted<0]  <- 0
+
+#rename matrix for easy handling
+Plate_Q6_145_CEA_final = Plate_Q6_145_subtracted
+
+#remove files that wont be used again
+remove(Plate_Q6_145_neg_data)
+remove(Plate_Q6_145_all_data)
+remove(Plate_Q6_145_CEA_data)
+#remove(Plate_Q6_145_neg_data_SUM)
+remove(Plate_Q6_145_neg_data_MEAN)
+remove(Plate_Q6_145_ID_empty)
+remove(Plate_Q6_145_ID_ercc)
+#remove(Plate_Q6_145_ID_c)
+#remove(Plate_Q6_145_ID_u)
+remove(Plate_Q6_145_ID_neg)
+remove(Plate_Q6_145_ID_CEA)
+remove(Plate_Q6_145_ID)
+remove(Plate_Q6_145_meta)
+remove(Plate_Q6_145_subtracted)
+remove(Plate_Q6_145_cells)
+remove(Plate_Q6_145_ID_qRNA)
+```
+
+
+
+#Extract the cell number associated with the first Plate: Plate_Q6_147 
+```{r}
+#retrive cells from this Plate
+Plate_Q6_147_ID = which(cea.meta$Sample== "Plate_Q6_147")
+Plate_Q6_147_meta = cea.meta[Plate_Q6_147_ID ,]
+Plate_Q6_147_cells = rownames(Plate_Q6_147_meta)
+length(Plate_Q6_147_cells)
+
+#ID the empty wells
+Plate_Q6_147_ID_empty = which(Plate_Q6_147_meta[,5] == "empty")
+length(Plate_Q6_147_ID_empty)
+
+#ID the ercc only wells
+Plate_Q6_147_ID_ercc = which(Plate_Q6_147_meta[,5] == "ERCC")
+length(Plate_Q6_147_ID_ercc)
+
+#ID the qRNA only wells
+Plate_Q6_147_ID_qRNA = which(Plate_Q6_147_meta[,5] == "qRNA")
+length(Plate_Q6_147_ID_qRNA)
+
+#ID the u only wells
+#Plate_Q6_147_ID_u = which(Plate_Q6_147_meta[,5] == "u")
+#length(Plate_Q6_147_ID_u)
+
+#ID the c only wells
+#Plate_Q6_147_ID_c = which(Plate_Q6_147_meta[,5] == "c")
+#length(Plate_Q6_147_ID_c)
+
+#ID the CEA signal only wells
+Plate_Q6_147_ID_CEA = which(Plate_Q6_147_meta[,5] == "CEA")
+length(Plate_Q6_147_ID_CEA)
+
+#concatenate the empty + ercc + qRNA wells into single negative groups
+Plate_Q6_147_ID_neg = c(Plate_Q6_147_ID_empty,Plate_Q6_147_ID_ercc, Plate_Q6_147_ID_qRNA)
+length(Plate_Q6_147_ID_neg)
+
+#use IDs from above to subset data matrix for this Plate
+Plate_Q6_147_all_data = cea.genes[,Plate_Q6_147_cells]
+Plate_Q6_147_CEA_data = Plate_Q6_147_all_data[,Plate_Q6_147_ID_CEA]
+Plate_Q6_147_neg_data = Plate_Q6_147_all_data[,Plate_Q6_147_ID_neg]
+
+#SUM counts across cea neg cells for every gene
+#Plate_Q6_147_neg_data_SUM = as.matrix(rowSums(Plate_Q6_147_neg_data))
+
+#AVERAGE counts across cea neg cells for every gene
+Plate_Q6_147_neg_data_MEAN = as.matrix(rowMeans(Plate_Q6_147_neg_data))
+
+#subtract these summed counts from cea other cells in the verified CEA dataset
+Plate_Q6_147_subtracted = Plate_Q6_147_CEA_data - Plate_Q6_147_neg_data_MEAN 
+
+#convert cea negative values to zeros
+Plate_Q6_147_subtracted[Plate_Q6_147_subtracted<0]  <- 0
+
+#rename matrix for easy handling
+Plate_Q6_147_CEA_final = Plate_Q6_147_subtracted
+
+#remove files that wont be used again
+remove(Plate_Q6_147_neg_data)
+remove(Plate_Q6_147_all_data)
+remove(Plate_Q6_147_CEA_data)
+#remove(Plate_Q6_147_neg_data_SUM)
+remove(Plate_Q6_147_neg_data_MEAN)
+remove(Plate_Q6_147_ID_empty)
+remove(Plate_Q6_147_ID_ercc)
+#remove(Plate_Q6_147_ID_c)
+#remove(Plate_Q6_147_ID_u)
+remove(Plate_Q6_147_ID_neg)
+remove(Plate_Q6_147_ID_CEA)
+remove(Plate_Q6_147_ID)
+remove(Plate_Q6_147_meta)
+remove(Plate_Q6_147_subtracted)
+remove(Plate_Q6_147_cells)
+remove(Plate_Q6_147_ID_qRNA)
+```
+
+
+
+#Extract the cell number associated with the first Plate: Plate_Q6_149 
+```{r}
+#retrive cells from this Plate
+Plate_Q6_149_ID = which(cea.meta$Sample== "Plate_Q6_149")
+Plate_Q6_149_meta = cea.meta[Plate_Q6_149_ID,]
+Plate_Q6_149_cells = rownames(Plate_Q6_149_meta)
+length(Plate_Q6_149_cells)
+
+#ID the empty wells
+Plate_Q6_149_ID_empty = which(Plate_Q6_149_meta[,5] == "empty")
+length(Plate_Q6_149_ID_empty)
+
+#ID the ercc only wells
+Plate_Q6_149_ID_ercc = which(Plate_Q6_149_meta[,5] == "ERCC")
+length(Plate_Q6_149_ID_ercc)
+
+#ID the qRNA only wells
+Plate_Q6_149_ID_qRNA = which(Plate_Q6_149_meta[,5] == "qRNA")
+length(Plate_Q6_149_ID_qRNA)
+
+#ID the u only wells
+#Plate_Q6_149_ID_u = which(Plate_Q6_149_meta[,5] == "u")
+#length(Plate_Q6_149_ID_u)
+
+#ID the c only wells
+#Plate_Q6_149_ID_c = which(Plate_Q6_149_meta[,5] == "c")
+#length(Plate_Q6_149_ID_c)
+
+#ID the CEA signal only wells
+Plate_Q6_149_ID_CEA = which(Plate_Q6_149_meta[,5] == "CEA")
+length(Plate_Q6_149_ID_CEA)
+
+#concatenate the empty + ercc + qRNA wells into single negative groups
+Plate_Q6_149_ID_neg = c(Plate_Q6_149_ID_empty,Plate_Q6_149_ID_ercc, Plate_Q6_149_ID_qRNA)
+length(Plate_Q6_149_ID_neg)
+
+#use IDs from above to subset data matrix for this Plate
+Plate_Q6_149_all_data = cea.genes[,Plate_Q6_149_cells]
+Plate_Q6_149_CEA_data = Plate_Q6_149_all_data[,Plate_Q6_149_ID_CEA]
+Plate_Q6_149_neg_data = Plate_Q6_149_all_data[,Plate_Q6_149_ID_neg]
+
+#SUM counts across cea neg cells for every gene
+#Plate_Q6_149_neg_data_SUM = as.matrix(rowSums(Plate_Q6_149_neg_data))
+
+#AVERAGE counts across cea neg cells for every gene
+Plate_Q6_149_neg_data_MEAN = as.matrix(rowMeans(Plate_Q6_149_neg_data))
+
+#subtract these summed counts from cea other cells in the verified CEA dataset
+Plate_Q6_149_subtracted = Plate_Q6_149_CEA_data - Plate_Q6_149_neg_data_MEAN 
+
+#convert cea negative values to zeros
+Plate_Q6_149_subtracted[Plate_Q6_149_subtracted<0]  <- 0
+
+#rename matrix for easy handling
+Plate_Q6_149_CEA_final = Plate_Q6_149_subtracted
+
+#remove files that wont be used again
+remove(Plate_Q6_149_neg_data)
+remove(Plate_Q6_149_all_data)
+remove(Plate_Q6_149_CEA_data)
+#remove(Plate_Q6_149_neg_data_SUM)
+remove(Plate_Q6_149_neg_data_MEAN)
+remove(Plate_Q6_149_ID_empty)
+remove(Plate_Q6_149_ID_ercc)
+#remove(Plate_Q6_149_ID_c)
+#remove(Plate_Q6_149_ID_u)
+remove(Plate_Q6_149_ID_neg)
+remove(Plate_Q6_149_ID_CEA)
+remove(Plate_Q6_149_ID)
+remove(Plate_Q6_149_meta)
+remove(Plate_Q6_149_subtracted)
+remove(Plate_Q6_149_cells)
+remove(Plate_Q6_149_ID_qRNA)
+```
+
+
+
+
+#Extract the cell number associated with the first Plate: Plate_Q6_155 
+```{r}
+#retrive cells from this Plate
+Plate_Q6_155_ID = which(cea.meta$Sample== "Plate_Q6_155")
+Plate_Q6_155_meta = cea.meta[Plate_Q6_155_ID ,]
+Plate_Q6_155_cells = rownames(Plate_Q6_155_meta)
+length(Plate_Q6_155_cells)
+
+#ID the empty wells
+Plate_Q6_155_ID_empty = which(Plate_Q6_155_meta[,5] == "empty")
+length(Plate_Q6_155_ID_empty)
+
+#ID the ercc only wells
+Plate_Q6_155_ID_ercc = which(Plate_Q6_155_meta[,5] == "ERCC")
+length(Plate_Q6_155_ID_ercc)
+
+#ID the qRNA only wells
+Plate_Q6_155_ID_qRNA = which(Plate_Q6_155_meta[,5] == "qRNA")
+length(Plate_Q6_155_ID_qRNA)
+
+#ID the u only wells
+#Plate_Q6_155_ID_u = which(Plate_Q6_155_meta[,5] == "u")
+#length(Plate_Q6_155_ID_u)
+
+#ID the c only wells
+#Plate_Q6_155_ID_c = which(Plate_Q6_155_meta[,5] == "c")
+#length(Plate_Q6_155_ID_c)
+
+#ID the CEA signal only wells
+Plate_Q6_155_ID_CEA = which(Plate_Q6_155_meta[,5] == "CEA")
+length(Plate_Q6_155_ID_CEA)
+
+#concatenate the empty + ercc + qRNA wells into single negative groups
+Plate_Q6_155_ID_neg = c(Plate_Q6_155_ID_empty,Plate_Q6_155_ID_ercc, Plate_Q6_155_ID_qRNA)
+length(Plate_Q6_155_ID_neg)
+
+#use IDs from above to subset data matrix for this Plate
+Plate_Q6_155_all_data = cea.genes[,Plate_Q6_155_cells]
+Plate_Q6_155_CEA_data = Plate_Q6_155_all_data[,Plate_Q6_155_ID_CEA]
+Plate_Q6_155_neg_data = Plate_Q6_155_all_data[,Plate_Q6_155_ID_neg]
+
+#SUM counts across cea neg cells for every gene
+#Plate_Q6_155_neg_data_SUM = as.matrix(rowSums(Plate_Q6_155_neg_data))
+
+#AVERAGE counts across cea neg cells for every gene
+Plate_Q6_155_neg_data_MEAN = as.matrix(rowMeans(Plate_Q6_155_neg_data))
+
+#subtract these summed counts from cea other cells in the verified CEA dataset
+Plate_Q6_155_subtracted = Plate_Q6_155_CEA_data - Plate_Q6_155_neg_data_MEAN 
+
+#convert cea negative values to zeros
+Plate_Q6_155_subtracted[Plate_Q6_155_subtracted<0]  <- 0
+
+#rename matrix for easy handling
+Plate_Q6_155_CEA_final = Plate_Q6_155_subtracted
+
+#remove files that wont be used again
+remove(Plate_Q6_155_neg_data)
+remove(Plate_Q6_155_all_data)
+remove(Plate_Q6_155_CEA_data)
+#remove(Plate_Q6_155_neg_data_SUM)
+remove(Plate_Q6_155_neg_data_MEAN)
+remove(Plate_Q6_155_ID_empty)
+remove(Plate_Q6_155_ID_ercc)
+#remove(Plate_Q6_155_ID_c)
+#remove(Plate_Q6_155_ID_u)
+remove(Plate_Q6_155_ID_neg)
+remove(Plate_Q6_155_ID_CEA)
+remove(Plate_Q6_155_ID)
+remove(Plate_Q6_155_meta)
+remove(Plate_Q6_155_subtracted)
+remove(Plate_Q6_155_cells)
+remove(Plate_Q6_155_ID_qRNA)
+```
+
+
+
+#Extract the cell number associated with the first Plate: Plate_Q6_159 
+```{r}
+#retrive cells from this Plate
+Plate_Q6_159_ID = which(cea.meta$Sample== "Plate_Q6_159")
+Plate_Q6_159_meta = cea.meta[Plate_Q6_159_ID ,]
+Plate_Q6_159_cells = rownames(Plate_Q6_159_meta)
+length(Plate_Q6_159_cells)
+
+#ID the empty wells
+Plate_Q6_159_ID_empty = which(Plate_Q6_159_meta[,5] == "empty")
+length(Plate_Q6_159_ID_empty)
+
+#ID the ercc only wells
+Plate_Q6_159_ID_ercc = which(Plate_Q6_159_meta[,5] == "ERCC")
+length(Plate_Q6_159_ID_ercc)
+
+#ID the qRNA only wells
+Plate_Q6_159_ID_qRNA = which(Plate_Q6_159_meta[,5] == "qRNA")
+length(Plate_Q6_159_ID_qRNA)
+
+#ID the u only wells
+#Plate_Q6_159_ID_u = which(Plate_Q6_159_meta[,5] == "u")
+#length(Plate_Q6_159_ID_u)
+
+#ID the c only wells
+#Plate_Q6_159_ID_c = which(Plate_Q6_159_meta[,5] == "c")
+#length(Plate_Q6_159_ID_c)
+
+#ID the CEA signal only wells
+Plate_Q6_159_ID_CEA = which(Plate_Q6_159_meta[,5] == "CEA")
+length(Plate_Q6_159_ID_CEA)
+
+#concatenate the empty + ercc + qRNA wells into single negative groups
+Plate_Q6_159_ID_neg = c(Plate_Q6_159_ID_empty,Plate_Q6_159_ID_ercc, Plate_Q6_159_ID_qRNA)
+length(Plate_Q6_159_ID_neg)
+
+#use IDs from above to subset data matrix for this Plate
+Plate_Q6_159_all_data = cea.genes[,Plate_Q6_159_cells]
+Plate_Q6_159_CEA_data = Plate_Q6_159_all_data[,Plate_Q6_159_ID_CEA]
+Plate_Q6_159_neg_data = Plate_Q6_159_all_data[,Plate_Q6_159_ID_neg]
+
+#SUM counts across cea neg cells for every gene
+#Plate_Q6_159_neg_data_SUM = as.matrix(rowSums(Plate_Q6_159_neg_data))
+
+#AVERAGE counts across cea neg cells for every gene
+Plate_Q6_159_neg_data_MEAN = as.matrix(rowMeans(Plate_Q6_159_neg_data))
+
+#subtract these summed counts from cea other cells in the verified CEA dataset
+Plate_Q6_159_subtracted = Plate_Q6_159_CEA_data - Plate_Q6_159_neg_data_MEAN 
+
+#convert cea negative values to zeros
+Plate_Q6_159_subtracted[Plate_Q6_159_subtracted<0]  <- 0
+
+#rename matrix for easy handling
+Plate_Q6_159_CEA_final = Plate_Q6_159_subtracted
+
+#remove files that wont be used again
+remove(Plate_Q6_159_neg_data)
+remove(Plate_Q6_159_all_data)
+remove(Plate_Q6_159_CEA_data)
+#remove(Plate_Q6_159_neg_data_SUM)
+remove(Plate_Q6_159_neg_data_MEAN)
+remove(Plate_Q6_159_ID_empty)
+remove(Plate_Q6_159_ID_ercc)
+#remove(Plate_Q6_159_ID_c)
+#remove(Plate_Q6_159_ID_u)
+remove(Plate_Q6_159_ID_neg)
+remove(Plate_Q6_159_ID_CEA)
+remove(Plate_Q6_159_ID)
+remove(Plate_Q6_159_meta)
+remove(Plate_Q6_159_subtracted)
+remove(Plate_Q6_159_cells)
+remove(Plate_Q6_159_ID_qRNA)
+```
+
+
+
+
+#Extract the cell number associated with the first Plate: Plate_Q7_142
+```{r}
+#retrive cells from this Plate
+Plate_Q7_142_ID = which(cea.meta$Sample== "Plate_Q7_142")
+Plate_Q7_142_meta = cea.meta[Plate_Q7_142_ID ,]
+Plate_Q7_142_cells = rownames(Plate_Q7_142_meta)
+length(Plate_Q7_142_cells)
+
+#ID the empty wells
+Plate_Q7_142_ID_empty = which(Plate_Q7_142_meta[,5] == "empty")
+length(Plate_Q7_142_ID_empty)
+
+#ID the ercc only wells
+Plate_Q7_142_ID_ercc = which(Plate_Q7_142_meta[,5] == "ERCC")
+length(Plate_Q7_142_ID_ercc)
+
+#ID the qRNA only wells
+Plate_Q7_142_ID_qRNA = which(Plate_Q7_142_meta[,5] == "qRNA")
+length(Plate_Q7_142_ID_qRNA)
+
+#ID the u only wells
+#Plate_Q7_142_ID_u = which(Plate_Q7_142_meta[,5] == "u")
+#length(Plate_Q7_142_ID_u)
+
+#ID the c only wells
+#Plate_Q7_142_ID_c = which(Plate_Q7_142_meta[,5] == "c")
+#length(Plate_Q7_142_ID_c)
+
+#ID the CEA signal only wells
+Plate_Q7_142_ID_CEA = which(Plate_Q7_142_meta[,5] == "CEA")
+length(Plate_Q7_142_ID_CEA)
+
+#concatenate the empty + ercc + qRNA wells into single negative groups
+Plate_Q7_142_ID_neg = c(Plate_Q7_142_ID_empty,Plate_Q7_142_ID_ercc, Plate_Q7_142_ID_qRNA)
+length(Plate_Q7_142_ID_neg)
+
+#use IDs from above to subset data matrix for this Plate
+Plate_Q7_142_all_data = cea.genes[,Plate_Q7_142_cells]
+Plate_Q7_142_CEA_data = Plate_Q7_142_all_data[,Plate_Q7_142_ID_CEA]
+Plate_Q7_142_neg_data = Plate_Q7_142_all_data[,Plate_Q7_142_ID_neg]
+
+#SUM counts across cea neg cells for every gene
+#Plate_Q7_142_neg_data_SUM = as.matrix(rowSums(Plate_Q7_142_neg_data))
+
+#AVERAGE counts across cea neg cells for every gene
+Plate_Q7_142_neg_data_MEAN = as.matrix(rowMeans(Plate_Q7_142_neg_data))
+
+#subtract these summed counts from cea other cells in the verified CEA dataset
+Plate_Q7_142_subtracted = Plate_Q7_142_CEA_data - Plate_Q7_142_neg_data_MEAN 
+
+#convert cea negative values to zeros
+Plate_Q7_142_subtracted[Plate_Q7_142_subtracted<0]  <- 0
+
+#rename matrix for easy handling
+Plate_Q7_142_CEA_final = Plate_Q7_142_subtracted
+
+#remove files that wont be used again
+remove(Plate_Q7_142_neg_data)
+remove(Plate_Q7_142_all_data)
+remove(Plate_Q7_142_CEA_data)
+#remove(Plate_Q7_142_neg_data_SUM)
+remove(Plate_Q7_142_neg_data_MEAN)
+remove(Plate_Q7_142_ID_empty)
+remove(Plate_Q7_142_ID_ercc)
+#remove(Plate_Q7_142_ID_c)
+#remove(Plate_Q7_142_ID_u)
+remove(Plate_Q7_142_ID_neg)
+remove(Plate_Q7_142_ID_CEA)
+remove(Plate_Q7_142_ID)
+remove(Plate_Q7_142_meta)
+remove(Plate_Q7_142_subtracted)
+remove(Plate_Q7_142_cells)
+remove(Plate_Q7_142_ID_qRNA)
+```
+
+
+#Extract the cell number associated with the first Plate: Plate_Q7_150
+```{r}
+#retrive cells from this Plate
+Plate_Q7_150_ID = which(cea.meta$Sample== "Plate_Q7_150")
+Plate_Q7_150_meta = cea.meta[Plate_Q7_150_ID ,]
+Plate_Q7_150_cells = rownames(Plate_Q7_150_meta)
+length(Plate_Q7_150_cells)
+
+#ID the empty wells
+Plate_Q7_150_ID_empty = which(Plate_Q7_150_meta[,5] == "empty")
+length(Plate_Q7_150_ID_empty)
+
+#ID the ercc only wells
+Plate_Q7_150_ID_ercc = which(Plate_Q7_150_meta[,5] == "ERCC")
+length(Plate_Q7_150_ID_ercc)
+
+#ID the qRNA only wells
+Plate_Q7_150_ID_qRNA = which(Plate_Q7_150_meta[,5] == "qRNA")
+length(Plate_Q7_150_ID_qRNA)
+
+#ID the u only wells
+#Plate_Q7_150_ID_u = which(Plate_Q7_150_meta[,5] == "u")
+#length(Plate_Q7_150_ID_u)
+
+#ID the c only wells
+#Plate_Q7_150_ID_c = which(Plate_Q7_150_meta[,5] == "c")
+#length(Plate_Q7_150_ID_c)
+
+#ID the CEA signal only wells
+Plate_Q7_150_ID_CEA = which(Plate_Q7_150_meta[,5] == "CEA")
+length(Plate_Q7_150_ID_CEA)
+
+#concatenate the empty + ercc + qRNA wells into single negative groups
+Plate_Q7_150_ID_neg = c(Plate_Q7_150_ID_empty,Plate_Q7_150_ID_ercc, Plate_Q7_150_ID_qRNA)
+length(Plate_Q7_150_ID_neg)
+
+#use IDs from above to subset data matrix for this Plate
+Plate_Q7_150_all_data = cea.genes[,Plate_Q7_150_cells]
+Plate_Q7_150_CEA_data = Plate_Q7_150_all_data[,Plate_Q7_150_ID_CEA]
+Plate_Q7_150_neg_data = Plate_Q7_150_all_data[,Plate_Q7_150_ID_neg]
+
+#SUM counts across cea neg cells for every gene
+#Plate_Q7_150_neg_data_SUM = as.matrix(rowSums(Plate_Q7_150_neg_data))
+
+#AVERAGE counts across cea neg cells for every gene
+Plate_Q7_150_neg_data_MEAN = as.matrix(rowMeans(Plate_Q7_150_neg_data))
+
+#subtract these summed counts from cea other cells in the verified CEA dataset
+Plate_Q7_150_subtracted = Plate_Q7_150_CEA_data - Plate_Q7_150_neg_data_MEAN 
+
+#convert cea negative values to zeros
+Plate_Q7_150_subtracted[Plate_Q7_150_subtracted<0]  <- 0
+
+#rename matrix for easy handling
+Plate_Q7_150_CEA_final = Plate_Q7_150_subtracted
+
+#remove files that wont be used again
+remove(Plate_Q7_150_neg_data)
+remove(Plate_Q7_150_all_data)
+remove(Plate_Q7_150_CEA_data)
+#remove(Plate_Q7_150_neg_data_SUM)
+remove(Plate_Q7_150_neg_data_MEAN)
+remove(Plate_Q7_150_ID_empty)
+remove(Plate_Q7_150_ID_ercc)
+#remove(Plate_Q7_150_ID_c)
+#remove(Plate_Q7_150_ID_u)
+remove(Plate_Q7_150_ID_neg)
+remove(Plate_Q7_150_ID_CEA)
+remove(Plate_Q7_150_ID)
+remove(Plate_Q7_150_meta)
+remove(Plate_Q7_150_subtracted)
+remove(Plate_Q7_150_cells)
+remove(Plate_Q7_150_ID_qRNA)
+```
+
+
+
+#Extract the cell number associated with the first Plate: Plate_Q7_152
+```{r}
+#retrive cells from this Plate
+Plate_Q7_152_ID = which(cea.meta$Sample== "Plate_Q7_152")
+Plate_Q7_152_meta = cea.meta[Plate_Q7_152_ID ,]
+Plate_Q7_152_cells = rownames(Plate_Q7_152_meta)
+length(Plate_Q7_152_cells)
+
+#ID the empty wells
+Plate_Q7_152_ID_empty = which(Plate_Q7_152_meta[,5] == "empty")
+length(Plate_Q7_152_ID_empty)
+
+#ID the ercc only wells
+Plate_Q7_152_ID_ercc = which(Plate_Q7_152_meta[,5] == "ERCC")
+length(Plate_Q7_152_ID_ercc)
+
+#ID the qRNA only wells
+Plate_Q7_152_ID_qRNA = which(Plate_Q7_152_meta[,5] == "qRNA")
+length(Plate_Q7_152_ID_qRNA)
+
+#ID the u only wells
+#Plate_Q7_152_ID_u = which(Plate_Q7_152_meta[,5] == "u")
+#length(Plate_Q7_152_ID_u)
+
+#ID the c only wells
+#Plate_Q7_152_ID_c = which(Plate_Q7_152_meta[,5] == "c")
+#length(Plate_Q7_152_ID_c)
+
+#ID the CEA signal only wells
+Plate_Q7_152_ID_CEA = which(Plate_Q7_152_meta[,5] == "CEA")
+length(Plate_Q7_152_ID_CEA)
+
+#concatenate the empty + ercc + qRNA wells into single negative groups
+Plate_Q7_152_ID_neg = c(Plate_Q7_152_ID_empty,Plate_Q7_152_ID_ercc, Plate_Q7_152_ID_qRNA)
+length(Plate_Q7_152_ID_neg)
+
+#use IDs from above to subset data matrix for this Plate
+Plate_Q7_152_all_data = cea.genes[,Plate_Q7_152_cells]
+Plate_Q7_152_CEA_data = Plate_Q7_152_all_data[,Plate_Q7_152_ID_CEA]
+Plate_Q7_152_neg_data = Plate_Q7_152_all_data[,Plate_Q7_152_ID_neg]
+
+#SUM counts across cea neg cells for every gene
+#Plate_Q7_152_neg_data_SUM = as.matrix(rowSums(Plate_Q7_152_neg_data))
+
+#AVERAGE counts across cea neg cells for every gene
+Plate_Q7_152_neg_data_MEAN = as.matrix(rowMeans(Plate_Q7_152_neg_data))
+
+#subtract these summed counts from cea other cells in the verified CEA dataset
+Plate_Q7_152_subtracted = Plate_Q7_152_CEA_data - Plate_Q7_152_neg_data_MEAN 
+
+#convert cea negative values to zeros
+Plate_Q7_152_subtracted[Plate_Q7_152_subtracted<0]  <- 0
+
+#rename matrix for easy handling
+Plate_Q7_152_CEA_final = Plate_Q7_152_subtracted
+
+#remove files that wont be used again
+remove(Plate_Q7_152_neg_data)
+remove(Plate_Q7_152_all_data)
+remove(Plate_Q7_152_CEA_data)
+#remove(Plate_Q7_152_neg_data_SUM)
+remove(Plate_Q7_152_neg_data_MEAN)
+remove(Plate_Q7_152_ID_empty)
+remove(Plate_Q7_152_ID_ercc)
+#remove(Plate_Q7_152_ID_c)
+#remove(Plate_Q7_152_ID_u)
+remove(Plate_Q7_152_ID_neg)
+remove(Plate_Q7_152_ID_CEA)
+remove(Plate_Q7_152_ID)
+remove(Plate_Q7_152_meta)
+remove(Plate_Q7_152_subtracted)
+remove(Plate_Q7_152_cells)
+remove(Plate_Q7_152_ID_qRNA)
+```
+
+
+
+
+
+#Extract the cell number associated with the first Plate: Plate_Q7_156
+```{r}
+#retrive cells from this Plate
+Plate_Q7_156_ID = which(cea.meta$Sample== "Plate_Q7_156")
+Plate_Q7_156_meta = cea.meta[Plate_Q7_156_ID ,]
+Plate_Q7_156_cells = rownames(Plate_Q7_156_meta)
+length(Plate_Q7_156_cells)
+
+#ID the empty wells
+Plate_Q7_156_ID_empty = which(Plate_Q7_156_meta[,5] == "empty")
+length(Plate_Q7_156_ID_empty)
+
+#ID the ercc only wells
+Plate_Q7_156_ID_ercc = which(Plate_Q7_156_meta[,5] == "ERCC")
+length(Plate_Q7_156_ID_ercc)
+
+#ID the qRNA only wells
+Plate_Q7_156_ID_qRNA = which(Plate_Q7_156_meta[,5] == "qRNA")
+length(Plate_Q7_156_ID_qRNA)
+
+#ID the u only wells
+#Plate_Q7_156_ID_u = which(Plate_Q7_156_meta[,5] == "u")
+#length(Plate_Q7_156_ID_u)
+
+#ID the c only wells
+#Plate_Q7_156_ID_c = which(Plate_Q7_156_meta[,5] == "c")
+#length(Plate_Q7_156_ID_c)
+
+#ID the CEA signal only wells
+Plate_Q7_156_ID_CEA = which(Plate_Q7_156_meta[,5] == "CEA")
+length(Plate_Q7_156_ID_CEA)
+
+#concatenate the empty + ercc + qRNA wells into single negative groups
+Plate_Q7_156_ID_neg = c(Plate_Q7_156_ID_empty,Plate_Q7_156_ID_ercc, Plate_Q7_156_ID_qRNA)
+length(Plate_Q7_156_ID_neg)
+
+#use IDs from above to subset data matrix for this Plate
+Plate_Q7_156_all_data = cea.genes[,Plate_Q7_156_cells]
+Plate_Q7_156_CEA_data = Plate_Q7_156_all_data[,Plate_Q7_156_ID_CEA]
+Plate_Q7_156_neg_data = Plate_Q7_156_all_data[,Plate_Q7_156_ID_neg]
+
+#SUM counts across cea neg cells for every gene
+#Plate_Q7_156_neg_data_SUM = as.matrix(rowSums(Plate_Q7_156_neg_data))
+
+#AVERAGE counts across cea neg cells for every gene
+Plate_Q7_156_neg_data_MEAN = as.matrix(rowMeans(Plate_Q7_156_neg_data))
+
+#subtract these summed counts from cea other cells in the verified CEA dataset
+Plate_Q7_156_subtracted = Plate_Q7_156_CEA_data - Plate_Q7_156_neg_data_MEAN 
+
+#convert cea negative values to zeros
+Plate_Q7_156_subtracted[Plate_Q7_156_subtracted<0]  <- 0
+
+#rename matrix for easy handling
+Plate_Q7_156_CEA_final = Plate_Q7_156_subtracted
+
+#remove files that wont be used again
+remove(Plate_Q7_156_neg_data)
+remove(Plate_Q7_156_all_data)
+remove(Plate_Q7_156_CEA_data)
+#remove(Plate_Q7_156_neg_data_SUM)
+remove(Plate_Q7_156_neg_data_MEAN)
+remove(Plate_Q7_156_ID_empty)
+remove(Plate_Q7_156_ID_ercc)
+#remove(Plate_Q7_156_ID_c)
+#remove(Plate_Q7_156_ID_u)
+remove(Plate_Q7_156_ID_neg)
+remove(Plate_Q7_156_ID_CEA)
+remove(Plate_Q7_156_ID)
+remove(Plate_Q7_156_meta)
+remove(Plate_Q7_156_subtracted)
+remove(Plate_Q7_156_cells)
+remove(Plate_Q7_156_ID_qRNA)
+```
+
+
+#Extract the cell number associated with the first Plate: Plate_Q7_160
+```{r}
+#retrive cells from this Plate
+Plate_Q7_160_ID = which(cea.meta$Sample== "Plate_Q7_160")
+Plate_Q7_160_meta = cea.meta[Plate_Q7_160_ID ,]
+Plate_Q7_160_cells = rownames(Plate_Q7_160_meta)
+length(Plate_Q7_160_cells)
+
+#ID the empty wells
+Plate_Q7_160_ID_empty = which(Plate_Q7_160_meta[,5] == "empty")
+length(Plate_Q7_160_ID_empty)
+
+#ID the ercc only wells
+Plate_Q7_160_ID_ercc = which(Plate_Q7_160_meta[,5] == "ERCC")
+length(Plate_Q7_160_ID_ercc)
+
+#ID the qRNA only wells
+Plate_Q7_160_ID_qRNA = which(Plate_Q7_160_meta[,5] == "qRNA")
+length(Plate_Q7_160_ID_qRNA)
+
+#ID the u only wells
+#Plate_Q7_160_ID_u = which(Plate_Q7_160_meta[,5] == "u")
+#length(Plate_Q7_160_ID_u)
+
+#ID the c only wells
+#Plate_Q7_160_ID_c = which(Plate_Q7_160_meta[,5] == "c")
+#length(Plate_Q7_160_ID_c)
+
+#ID the CEA signal only wells
+Plate_Q7_160_ID_CEA = which(Plate_Q7_160_meta[,5] == "CEA")
+length(Plate_Q7_160_ID_CEA)
+
+#concatenate the empty + ercc + qRNA wells into single negative groups
+Plate_Q7_160_ID_neg = c(Plate_Q7_160_ID_empty,Plate_Q7_160_ID_ercc, Plate_Q7_160_ID_qRNA)
+length(Plate_Q7_160_ID_neg)
+
+#use IDs from above to subset data matrix for this Plate
+Plate_Q7_160_all_data = cea.genes[,Plate_Q7_160_cells]
+Plate_Q7_160_CEA_data = Plate_Q7_160_all_data[,Plate_Q7_160_ID_CEA]
+Plate_Q7_160_neg_data = Plate_Q7_160_all_data[,Plate_Q7_160_ID_neg]
+
+#SUM counts across cea neg cells for every gene
+#Plate_Q7_160_neg_data_SUM = as.matrix(rowSums(Plate_Q7_160_neg_data))
+
+#AVERAGE counts across cea neg cells for every gene
+Plate_Q7_160_neg_data_MEAN = as.matrix(rowMeans(Plate_Q7_160_neg_data))
+
+#subtract these summed counts from cea other cells in the verified CEA dataset
+Plate_Q7_160_subtracted = Plate_Q7_160_CEA_data - Plate_Q7_160_neg_data_MEAN 
+
+#convert cea negative values to zeros
+Plate_Q7_160_subtracted[Plate_Q7_160_subtracted<0]  <- 0
+
+#rename matrix for easy handling
+Plate_Q7_160_CEA_final = Plate_Q7_160_subtracted
+
+#remove files that wont be used again
+remove(Plate_Q7_160_neg_data)
+remove(Plate_Q7_160_all_data)
+remove(Plate_Q7_160_CEA_data)
+#remove(Plate_Q7_160_neg_data_SUM)
+remove(Plate_Q7_160_neg_data_MEAN)
+remove(Plate_Q7_160_ID_empty)
+remove(Plate_Q7_160_ID_ercc)
+#remove(Plate_Q7_160_ID_c)
+#remove(Plate_Q7_160_ID_u)
+remove(Plate_Q7_160_ID_neg)
+remove(Plate_Q7_160_ID_CEA)
+remove(Plate_Q7_160_ID)
+remove(Plate_Q7_160_meta)
+remove(Plate_Q7_160_subtracted)
+remove(Plate_Q7_160_cells)
+remove(Plate_Q7_160_ID_qRNA)
+```
+
+
+
+
+#Extract the cell number associated with the first Plate: Plate_Q8_143
+```{r}
+#retrive cells from this Plate
+Plate_Q8_143_ID = which(cea.meta$Sample== "Plate_Q8_143")
+Plate_Q8_143_meta = cea.meta[Plate_Q8_143_ID ,]
+Plate_Q8_143_cells = rownames(Plate_Q8_143_meta)
+length(Plate_Q8_143_cells)
+
+#ID the empty wells
+Plate_Q8_143_ID_empty = which(Plate_Q8_143_meta[,5] == "empty")
+length(Plate_Q8_143_ID_empty)
+
+#ID the ercc only wells
+Plate_Q8_143_ID_ercc = which(Plate_Q8_143_meta[,5] == "ERCC")
+length(Plate_Q8_143_ID_ercc)
+
+#ID the qRNA only wells
+Plate_Q8_143_ID_qRNA = which(Plate_Q8_143_meta[,5] == "qRNA")
+length(Plate_Q8_143_ID_qRNA)
+
+#ID the u only wells
+#Plate_Q8_143_ID_u = which(Plate_Q8_143_meta[,5] == "u")
+#length(Plate_Q8_143_ID_u)
+
+#ID the c only wells
+#Plate_Q8_143_ID_c = which(Plate_Q8_143_meta[,5] == "c")
+#length(Plate_Q8_143_ID_c)
+
+#ID the CEA signal only wells
+Plate_Q8_143_ID_CEA = which(Plate_Q8_143_meta[,5] == "CEA")
+length(Plate_Q8_143_ID_CEA)
+
+#concatenate the empty + ercc + qRNA wells into single negative groups
+Plate_Q8_143_ID_neg = c(Plate_Q8_143_ID_empty,Plate_Q8_143_ID_ercc, Plate_Q8_143_ID_qRNA)
+length(Plate_Q8_143_ID_neg)
+
+#use IDs from above to subset data matrix for this Plate
+Plate_Q8_143_all_data = cea.genes[,Plate_Q8_143_cells]
+Plate_Q8_143_CEA_data = Plate_Q8_143_all_data[,Plate_Q8_143_ID_CEA]
+Plate_Q8_143_neg_data = Plate_Q8_143_all_data[,Plate_Q8_143_ID_neg]
+
+#SUM counts across cea neg cells for every gene
+#Plate_Q8_143_neg_data_SUM = as.matrix(rowSums(Plate_Q8_143_neg_data))
+
+#AVERAGE counts across cea neg cells for every gene
+Plate_Q8_143_neg_data_MEAN = as.matrix(rowMeans(Plate_Q8_143_neg_data))
+
+#subtract these summed counts from cea other cells in the verified CEA dataset
+Plate_Q8_143_subtracted = Plate_Q8_143_CEA_data - Plate_Q8_143_neg_data_MEAN 
+
+#convert cea negative values to zeros
+Plate_Q8_143_subtracted[Plate_Q8_143_subtracted<0]  <- 0
+
+#rename matrix for easy handling
+Plate_Q8_143_CEA_final = Plate_Q8_143_subtracted
+
+#remove files that wont be used again
+remove(Plate_Q8_143_neg_data)
+remove(Plate_Q8_143_all_data)
+remove(Plate_Q8_143_CEA_data)
+#remove(Plate_Q8_143_neg_data_SUM)
+remove(Plate_Q8_143_neg_data_MEAN)
+remove(Plate_Q8_143_ID_empty)
+remove(Plate_Q8_143_ID_ercc)
+#remove(Plate_Q8_143_ID_c)
+#remove(Plate_Q8_143_ID_u)
+remove(Plate_Q8_143_ID_neg)
+remove(Plate_Q8_143_ID_CEA)
+remove(Plate_Q8_143_ID)
+remove(Plate_Q8_143_meta)
+remove(Plate_Q8_143_subtracted)
+remove(Plate_Q8_143_cells)
+remove(Plate_Q8_143_ID_qRNA)
+```
+
+
+
+#Extract the cell number associated with the first Plate: Plate_Q8_151
+```{r}
+#retrive cells from this Plate
+Plate_Q8_151_ID = which(cea.meta$Sample== "Plate_Q8_151")
+Plate_Q8_151_meta = cea.meta[Plate_Q8_151_ID ,]
+Plate_Q8_151_cells = rownames(Plate_Q8_151_meta)
+length(Plate_Q8_151_cells)
+
+#ID the empty wells
+Plate_Q8_151_ID_empty = which(Plate_Q8_151_meta[,5] == "empty")
+length(Plate_Q8_151_ID_empty)
+
+#ID the ercc only wells
+Plate_Q8_151_ID_ercc = which(Plate_Q8_151_meta[,5] == "ERCC")
+length(Plate_Q8_151_ID_ercc)
+
+#ID the qRNA only wells
+Plate_Q8_151_ID_qRNA = which(Plate_Q8_151_meta[,5] == "qRNA")
+length(Plate_Q8_151_ID_qRNA)
+
+#ID the u only wells
+#Plate_Q8_151_ID_u = which(Plate_Q8_151_meta[,5] == "u")
+#length(Plate_Q8_151_ID_u)
+
+#ID the c only wells
+#Plate_Q8_151_ID_c = which(Plate_Q8_151_meta[,5] == "c")
+#length(Plate_Q8_151_ID_c)
+
+#ID the CEA signal only wells
+Plate_Q8_151_ID_CEA = which(Plate_Q8_151_meta[,5] == "CEA")
+length(Plate_Q8_151_ID_CEA)
+
+#concatenate the empty + ercc + qRNA wells into single negative groups
+Plate_Q8_151_ID_neg = c(Plate_Q8_151_ID_empty,Plate_Q8_151_ID_ercc, Plate_Q8_151_ID_qRNA)
+length(Plate_Q8_151_ID_neg)
+
+#use IDs from above to subset data matrix for this Plate
+Plate_Q8_151_all_data = cea.genes[,Plate_Q8_151_cells]
+Plate_Q8_151_CEA_data = Plate_Q8_151_all_data[,Plate_Q8_151_ID_CEA]
+Plate_Q8_151_neg_data = Plate_Q8_151_all_data[,Plate_Q8_151_ID_neg]
+
+#SUM counts across cea neg cells for every gene
+#Plate_Q8_151_neg_data_SUM = as.matrix(rowSums(Plate_Q8_151_neg_data))
+
+#AVERAGE counts across cea neg cells for every gene
+Plate_Q8_151_neg_data_MEAN = as.matrix(rowMeans(Plate_Q8_151_neg_data))
+
+#subtract these summed counts from cea other cells in the verified CEA dataset
+Plate_Q8_151_subtracted = Plate_Q8_151_CEA_data - Plate_Q8_151_neg_data_MEAN 
+
+#convert cea negative values to zeros
+Plate_Q8_151_subtracted[Plate_Q8_151_subtracted<0]  <- 0
+
+#rename matrix for easy handling
+Plate_Q8_151_CEA_final = Plate_Q8_151_subtracted
+
+#remove files that wont be used again
+remove(Plate_Q8_151_neg_data)
+remove(Plate_Q8_151_all_data)
+remove(Plate_Q8_151_CEA_data)
+#remove(Plate_Q8_151_neg_data_SUM)
+remove(Plate_Q8_151_neg_data_MEAN)
+remove(Plate_Q8_151_ID_empty)
+remove(Plate_Q8_151_ID_ercc)
+#remove(Plate_Q8_151_ID_c)
+#remove(Plate_Q8_151_ID_u)
+remove(Plate_Q8_151_ID_neg)
+remove(Plate_Q8_151_ID_CEA)
+remove(Plate_Q8_151_ID)
+remove(Plate_Q8_151_meta)
+remove(Plate_Q8_151_subtracted)
+remove(Plate_Q8_151_cells)
+remove(Plate_Q8_151_ID_qRNA)
+```
+
+
+
+#Extract the cell number associated with the first Plate: Plate_Q8_153
+```{r}
+#retrive cells from this Plate
+Plate_Q8_153_ID = which(cea.meta$Sample== "Plate_Q8_153")
+Plate_Q8_153_meta = cea.meta[Plate_Q8_153_ID ,]
+Plate_Q8_153_cells = rownames(Plate_Q8_153_meta)
+length(Plate_Q8_153_cells)
+
+#ID the empty wells
+Plate_Q8_153_ID_empty = which(Plate_Q8_153_meta[,5] == "empty")
+length(Plate_Q8_153_ID_empty)
+
+#ID the ercc only wells
+Plate_Q8_153_ID_ercc = which(Plate_Q8_153_meta[,5] == "ERCC")
+length(Plate_Q8_153_ID_ercc)
+
+#ID the qRNA only wells
+Plate_Q8_153_ID_qRNA = which(Plate_Q8_153_meta[,5] == "qRNA")
+length(Plate_Q8_153_ID_qRNA)
+
+#ID the u only wells
+#Plate_Q8_153_ID_u = which(Plate_Q8_153_meta[,5] == "u")
+#length(Plate_Q8_153_ID_u)
+
+#ID the c only wells
+#Plate_Q8_153_ID_c = which(Plate_Q8_153_meta[,5] == "c")
+#length(Plate_Q8_153_ID_c)
+
+#ID the CEA signal only wells
+Plate_Q8_153_ID_CEA = which(Plate_Q8_153_meta[,5] == "CEA")
+length(Plate_Q8_153_ID_CEA)
+
+#concatenate the empty + ercc + qRNA wells into single negative groups
+Plate_Q8_153_ID_neg = c(Plate_Q8_153_ID_empty,Plate_Q8_153_ID_ercc, Plate_Q8_153_ID_qRNA)
+length(Plate_Q8_153_ID_neg)
+
+#use IDs from above to subset data matrix for this Plate
+Plate_Q8_153_all_data = cea.genes[,Plate_Q8_153_cells]
+Plate_Q8_153_CEA_data = Plate_Q8_153_all_data[,Plate_Q8_153_ID_CEA]
+Plate_Q8_153_neg_data = Plate_Q8_153_all_data[,Plate_Q8_153_ID_neg]
+
+#SUM counts across cea neg cells for every gene
+#Plate_Q8_153_neg_data_SUM = as.matrix(rowSums(Plate_Q8_153_neg_data))
+
+#AVERAGE counts across cea neg cells for every gene
+Plate_Q8_153_neg_data_MEAN = as.matrix(rowMeans(Plate_Q8_153_neg_data))
+
+#subtract these summed counts from cea other cells in the verified CEA dataset
+Plate_Q8_153_subtracted = Plate_Q8_153_CEA_data - Plate_Q8_153_neg_data_MEAN 
+
+#convert cea negative values to zeros
+Plate_Q8_153_subtracted[Plate_Q8_153_subtracted<0]  <- 0
+
+#rename matrix for easy handling
+Plate_Q8_153_CEA_final = Plate_Q8_153_subtracted
+
+#remove files that wont be used again
+remove(Plate_Q8_153_neg_data)
+remove(Plate_Q8_153_all_data)
+remove(Plate_Q8_153_CEA_data)
+#remove(Plate_Q8_153_neg_data_SUM)
+remove(Plate_Q8_153_neg_data_MEAN)
+remove(Plate_Q8_153_ID_empty)
+remove(Plate_Q8_153_ID_ercc)
+#remove(Plate_Q8_153_ID_c)
+#remove(Plate_Q8_153_ID_u)
+remove(Plate_Q8_153_ID_neg)
+remove(Plate_Q8_153_ID_CEA)
+remove(Plate_Q8_153_ID)
+remove(Plate_Q8_153_meta)
+remove(Plate_Q8_153_subtracted)
+remove(Plate_Q8_153_cells)
+remove(Plate_Q8_153_ID_qRNA)
+```
+
+
+
+
+#Extract the cell number associated with the first Plate: Plate_Q8_157
+```{r}
+#retrive cells from this Plate
+Plate_Q8_157_ID = which(cea.meta$Sample== "Plate_Q8_157")
+Plate_Q8_157_meta = cea.meta[Plate_Q8_157_ID ,]
+Plate_Q8_157_cells = rownames(Plate_Q8_157_meta)
+length(Plate_Q8_157_cells)
+
+#ID the empty wells
+Plate_Q8_157_ID_empty = which(Plate_Q8_157_meta[,5] == "empty")
+length(Plate_Q8_157_ID_empty)
+
+#ID the ercc only wells
+Plate_Q8_157_ID_ercc = which(Plate_Q8_157_meta[,5] == "ERCC")
+length(Plate_Q8_157_ID_ercc)
+
+#ID the qRNA only wells
+Plate_Q8_157_ID_qRNA = which(Plate_Q8_157_meta[,5] == "qRNA")
+length(Plate_Q8_157_ID_qRNA)
+
+#ID the u only wells
+#Plate_Q8_157_ID_u = which(Plate_Q8_157_meta[,5] == "u")
+#length(Plate_Q8_157_ID_u)
+
+#ID the c only wells
+#Plate_Q8_157_ID_c = which(Plate_Q8_157_meta[,5] == "c")
+#length(Plate_Q8_157_ID_c)
+
+#ID the CEA signal only wells
+Plate_Q8_157_ID_CEA = which(Plate_Q8_157_meta[,5] == "CEA")
+length(Plate_Q8_157_ID_CEA)
+
+#concatenate the empty + ercc + qRNA wells into single negative groups
+Plate_Q8_157_ID_neg = c(Plate_Q8_157_ID_empty,Plate_Q8_157_ID_ercc, Plate_Q8_157_ID_qRNA)
+length(Plate_Q8_157_ID_neg)
+
+#use IDs from above to subset data matrix for this Plate
+Plate_Q8_157_all_data = cea.genes[,Plate_Q8_157_cells]
+Plate_Q8_157_CEA_data = Plate_Q8_157_all_data[,Plate_Q8_157_ID_CEA]
+Plate_Q8_157_neg_data = Plate_Q8_157_all_data[,Plate_Q8_157_ID_neg]
+
+#SUM counts across cea neg cells for every gene
+#Plate_Q8_157_neg_data_SUM = as.matrix(rowSums(Plate_Q8_157_neg_data))
+
+#AVERAGE counts across cea neg cells for every gene
+Plate_Q8_157_neg_data_MEAN = as.matrix(rowMeans(Plate_Q8_157_neg_data))
+
+#subtract these summed counts from cea other cells in the verified CEA dataset
+Plate_Q8_157_subtracted = Plate_Q8_157_CEA_data - Plate_Q8_157_neg_data_MEAN 
+
+#convert cea negative values to zeros
+Plate_Q8_157_subtracted[Plate_Q8_157_subtracted<0]  <- 0
+
+#rename matrix for easy handling
+Plate_Q8_157_CEA_final = Plate_Q8_157_subtracted
+
+#remove files that wont be used again
+remove(Plate_Q8_157_neg_data)
+remove(Plate_Q8_157_all_data)
+remove(Plate_Q8_157_CEA_data)
+#remove(Plate_Q8_157_neg_data_SUM)
+remove(Plate_Q8_157_neg_data_MEAN)
+remove(Plate_Q8_157_ID_empty)
+remove(Plate_Q8_157_ID_ercc)
+#remove(Plate_Q8_157_ID_c)
+#remove(Plate_Q8_157_ID_u)
+remove(Plate_Q8_157_ID_neg)
+remove(Plate_Q8_157_ID_CEA)
+remove(Plate_Q8_157_ID)
+remove(Plate_Q8_157_meta)
+remove(Plate_Q8_157_subtracted)
+remove(Plate_Q8_157_cells)
+remove(Plate_Q8_157_ID_qRNA)
+```
+
+
+#concatenate all subtracted LHA only datasets into one common matrix
+```{r}
+cea.subtracted = as.data.frame(cbind(Plate_Q5_144_CEA_final, Plate_Q5_146_CEA_final, Plate_Q5_148_CEA_final, Plate_Q5_154_CEA_final, Plate_Q5_158_CEA_final, Plate_Q6_145_CEA_final, Plate_Q6_147_CEA_final, Plate_Q6_149_CEA_final, Plate_Q6_155_CEA_final, Plate_Q6_159_CEA_final, Plate_Q7_142_CEA_final, Plate_Q7_150_CEA_final, Plate_Q7_152_CEA_final, Plate_Q7_156_CEA_final, Plate_Q7_160_CEA_final, Plate_Q8_143_CEA_final, Plate_Q8_151_CEA_final, Plate_Q8_153_CEA_final, Plate_Q8_157_CEA_final))
+```
+
+```{r}
+rm(Plate_Q5_144_CEA_final, Plate_Q5_146_CEA_final, Plate_Q5_148_CEA_final, Plate_Q5_154_CEA_final, Plate_Q5_158_CEA_final, Plate_Q6_145_CEA_final, Plate_Q6_147_CEA_final, Plate_Q6_149_CEA_final, Plate_Q6_155_CEA_final, Plate_Q6_159_CEA_final, Plate_Q7_142_CEA_final, Plate_Q7_150_CEA_final, Plate_Q7_152_CEA_final, Plate_Q7_156_CEA_final, Plate_Q7_160_CEA_final, Plate_Q8_143_CEA_final, Plate_Q8_151_CEA_final, Plate_Q8_153_CEA_final, Plate_Q8_157_CEA_final)
+```
+
+
+

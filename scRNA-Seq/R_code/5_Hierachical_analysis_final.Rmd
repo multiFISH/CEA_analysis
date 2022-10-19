@@ -1,0 +1,30 @@
+---
+title: "Plot dendrogram"
+output: html_notebook
+Author: Yuhan Wang
+---
+
+
+```{r}
+load("/Users/wangy6/Desktop/DATA/CEA_RNAseq/CEA_2021_analysis/cea_neuron_v3_final_Dec2021.proj")
+```
+
+```{r}
+ElbowPlot(cea_neuron_new,ndims=50)
+cea_neuron_new_V2 <- BuildClusterTree(object = cea_neuron_new_V2,reorder = FALSE,dims=1:30)
+Tool(object = cea_neuron_new_V2 , slot = 'BuildClusterTree')
+library(ggplot2)
+PlotClusterTree(cea_neuron_new_V2,show.node.label = FALSE)
+ggsave("/Volumes/multifish/CEA_analysis/figures/scRNAseq/clusterTree_plot.pdf",PlotClusterTree(cea_neuron_new,show.node.label = FALSE), width = 8, height = 5,dpi = 100, units = "in")
+
+```
+
+
+```{r}
+x=FindMarkers(cea_neuron_new_V2, ident.1='clustertree' ,ident.2=23,
+  logfc.threshold = 0.25, test.use = "wilcox")
+library(dplyr)
+
+x %>%slice_max(n = 20, order_by = pct.2-pct.1)
+```
+

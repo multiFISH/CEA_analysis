@@ -1,0 +1,136 @@
+---
+title: "CEA_subtract_just_neurons"
+author: "Yuhan"
+date: "10/8/2032"
+output: html_notebook
+---
+
+```{r}
+load("/Users/wangy6/Desktop/DATA/CEA_RNAseq/CEA_2021_analysis/cea_neuron_Oct2021.proj")
+
+cea_neuron<- cea_neuron %>% NormalizeData() %>% FindVariableFeatures(selection.method = "vst", nfeatures = 2000) %>% ScaleData() %>% RunPCA() %>% FindNeighbors() %>% RunUMAP(dims = 1:40)
+```
+
+```{r}
+ElbowPlot(cea_neuron,ndims=50)
+```
+
+
+# Finalize the parameters: k=25, resolution=1.5
+```{r,fig.height=4,fig.width=6}
+cea_neuron = RunTSNE(cea_neuron,dims = 1:40,seed.use=1,perplexity=25) 
+cea_neuron =FindNeighbors(cea_neuron,dims = 1:40,k.param=25)
+cea_neuron =FindClusters(cea_neuron,algorithm=2,resolution=1.5)
+cea_neuron = RunUMAP(cea_neuron,dims = 1:40,seed.use=1,n.neighbors = 30L,min.dist = 0.3) 
+SilhouetteRainCloudPlot(CalculateSilhouette(cea_neuron, dims = 1:40))
+DimPlot(cea_neuron, reduction = "umap",label=TRUE,pt.size=0.5)
+
+```
+
+###Compute silhouette score#### Memory intensive, can't compute on laptop
+```{r}
+# silhouette metric
+library(ggplot2)
+library(cluster, quietly = TRUE)
+dist.matrix <- dist(x = Embeddings(cea_neuron@reductions$`pca`)[, 1:40])
+clusters <-cea_neuron@active.ident
+sil <- silhouette(x = as.numeric(x = as.factor(x = clusters)), dist = dist.matrix)
+cea_neuron$sil <- sil[, 3]
+
+library(scclusteval)
+SilhouetteRainCloudPlot(CalculateSilhouette(cea_neuron, dims = 1:40))
+sil=CalculateSilhouette(cea_neurons, dims = 1:40)
+x=aggregate(sil[, 2], list(sil$cluster), mean)
+mean(x$width)
+```
+
+## Bootstrap to determine cluster stability with different parameters (k, resolution, dim)
+```{r}
+k=20
+resolution=2
+dim=1:40
+
+#cea_neuron=FindNeighbors(cea_neuron,dims = dim,k.param=k)
+#cea_neuron=FindClusters(cea_neuron,algorithm=2,resolution=resolution)
+
+cea_neuron$orig.ident=Idents(cea_neuron)
+a=list()
+b=list()
+
+x=1
+repeat {
+cea_neuron_sub=RandomSubsetData(cea_neuron, rate=0.8)
+cea_neuron_sub<- cea_neuron_sub%>%ScaleData()%>% FindNeighbors(dims = dim,k.param = k) %>% FindClusters(algorithm=2,resolution = resolution)
+
+a=append(a,list(cea_neuron_sub$orig.ident))
+b=append(b,list(cea_neuron_sub@active.ident))
+
+rm(cea_neuron_sub)
+x=x+1
+if (x == 101){
+break
+}
+}
+
+JaccardRainCloudPlot(a,b)+ geom_hline(yintercept = c(0.5), linetype = 2) 
+```
+
+## Jaccard similarity index to look at confusing clusters
+```{r}
+cea_neuron=FindNeighbors(cea_neuron,dims = 1:40,k.param=20)
+cea_neuron=FindClusters(cea_neuron,algorithm=2,resolution=1.5)
+
+cea_neuron$orig.ident=Idents(cea_neuron)
+cea_neuron_sub=RandomSubsetData(cea_neuron, rate=0.8)
+cea_neuron_sub<- cea_neuron_sub%>%ScaleData()%>% FindNeighbors(dims = 1:40,k.param=20) %>% FindClusters(algorithm=2,resolution=1.5)
+PairWiseJaccardSetsHeatmap(cea_neuron_sub$orig.ident,cea_neuron_sub@active.ident, best_match = TRUE)
+```
+
+```{r, fig.width=4,fig.height=3}
+DimPlot(cea_neuron,reduction='umap',label=TRUE,pt.size=1)
+```
+
+```{r}
+cluster9=subset(cea_neuron,ident='9')
+
+cluster9=cluster9 %>% FindNeighbors(reduction='umap',dims=1:2) %>% FindClusters(resolution=.1)
+
+DimPlot(cluster9, reduction='umap')
+
+FeaturePlot(cluster9, features=c('Vipr2','Htr1b'))
+
+cea_neuron <-SetIdent(cea_neuron, cells=WhichCells(cluster9, idents='0'), value='9a')
+cea_neuron <-SetIdent(cea_neuron, cells=WhichCells(cluster9, idents='1'), value='9b')
+
+```
+
+```{r}
+DimPlot(cea_neuron,label=TRUE,reduction='umap')
+```
+
+```{r}
+cea_neuron <- ReorderIdent(cea_neuron, var='nCount_RNA', reverse=TRUE, reorder.numeric = TRUE)
+VlnPlot(cea_neuron, features=c('nFeature_RNA', 'nCount_RNA','Gad1'))
+```
+
+```{r,fig.height=20,fig.width=8}
+VlnPlot(cea_neuron,features=rownames(CEA_mFISH),ncol=3,slot = "counts")
+```
+
+
+```{r}
+library(dplyr)
+# find markers for every cluster compared to all remaining cells, report only the positive ones
+cea.neurons.markers <- FindAllMarkers(object = cea_neuron, only.pos = FALSE, min.pct = 0.25, logfc.threshold=0.75, test.use = "wilcox")
+cea.neurons.markers %>%
+    group_by(cluster) %>%
+    slice_max(n = 20, order_by = avg_log2FC)
+
+cea.neurons.markers %>%
+    group_by(cluster) %>%
+    slice_max(n = 20, order_by = pct.1-pct.2)
+```
+
+```{r,fig.height=20,fig.width=8}
+FeaturePlot(cea_neuron,reduction='umap',features=rownames(CEA_mFISH),ncol=3, pt.size=0.5)
+```

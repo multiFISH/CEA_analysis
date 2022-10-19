@@ -1,0 +1,106 @@
+---
+title: "CEA_subtract_just_neurons"
+author: "Yuhan"
+date: "10/8/2032"
+output: html_notebook
+---
+
+# Recluster neurons not well separated (take out cluster 4, 6,8,10,11,12, and recluster)
+```{r}
+load("/Users/wangy6/Desktop/DATA/CEA_RNAseq/CEA_2021_analysis/cea_neuron_Oct2021.proj")
+
+library(dplyr)
+cea_neuron_subset=subset(cea_neuron,ident=c('4','10','12','11','8','6'),invert=TRUE)
+cea_neuron_subset<- cea_neuron_subset %>% NormalizeData() %>% FindVariableFeatures(nfeatures = 4000) %>% ScaleData() %>% RunPCA()
+```
+
+```{r}
+ElbowPlot(cea_neuron,ndims=50)
+```
+
+
+# Take the first 30 PCs for following analysis
+```{r,fig.height=4,fig.width=6}
+cea_neuron_subset = RunTSNE(cea_neuron_subset,dims = 1:30,seed.use=1) 
+cea_neuron_subset =FindNeighbors(cea_neuron_subset,dims = 1:30,k.param=20)
+cea_neuron_subset =FindClusters(cea_neuron_subset,resolution=1)
+#cea_neuron = RunUMAP(cea_neuron,dims = 1:30,seed.use=1,n.neighbors = 30L,min.dist = 0.3) 
+SilhouetteRainCloudPlot(CalculateSilhouette(cea_neuron, dims = 1:40))
+DimPlot(cea_neuron_subset, reduction = "umap",label=TRUE,pt.size=2)
+```
+
+
+```{r}
+cea_neuron_new <-SetIdent(cea_neuron,cells=WhichCells(cea_neuron,ident=c('4','10','12','11','8','6'),invert=TRUE), value='0')
+cea_neuron_new <-SetIdent(cea_neuron_new, cells=WhichCells(cea_neuron_subset,ident='0'), value='13')
+cea_neuron_new <-SetIdent(cea_neuron_new, cells=WhichCells(cea_neuron_subset,ident='8'), value='13')
+cea_neuron_new <-SetIdent(cea_neuron_new, cells=WhichCells(cea_neuron_subset,ident='1'), value='14')
+cea_neuron_new <-SetIdent(cea_neuron_new, cells=WhichCells(cea_neuron_subset,ident='2'), value='15')
+cea_neuron_new <-SetIdent(cea_neuron_new, cells=WhichCells(cea_neuron_subset,ident='3'), value='16')
+cea_neuron_new <-SetIdent(cea_neuron_new, cells=WhichCells(cea_neuron_subset,ident='6'), value='16')
+cea_neuron_new <-SetIdent(cea_neuron_new, cells=WhichCells(cea_neuron_subset,ident='4'), value='18')
+cea_neuron_new <-SetIdent(cea_neuron_new, cells=WhichCells(cea_neuron_subset,ident='5'), value='19')
+cea_neuron_new <-SetIdent(cea_neuron_new, cells=WhichCells(cea_neuron_subset,ident='7'), value='20')
+cea_neuron_new <- ReorderIdent(cea_neuron_new, var='nCount_RNA', reverse=TRUE, reorder.numeric = TRUE)
+DimPlot(cea_neuron_new, reduction = "umap",label=TRUE,pt.size=0.5)
+```
+# cea_neuron cluster 15 is a endothelial cell cluster, remove from the dataset. 
+```{r}
+cea_neuron_new_V2=subset(cea_neuron_new, cells=WhichCells(cea_neuron,ident='15'),invert=TRUE)
+DimPlot(cea_neuron_new_V2,label=TRUE)
+```
+
+# Evaluate cluster stability 
+
+###Compute silhouette score#### Memory intensive, can't compute on laptop
+```{r}
+# silhouette metric
+library(ggplot2)
+library(cluster, quietly = TRUE)
+dist.matrix <- dist(x = Embeddings(cea_neuron@reductions$`pca`)[, 1:40])
+clusters <-cea_neuron@active.ident
+sil <- silhouette(x = as.numeric(x = as.factor(x = clusters)), dist = dist.matrix)
+cea_neuron$sil <- sil[, 3]
+
+library(scclusteval)
+SilhouetteRainCloudPlot(CalculateSilhouette(cea_neuron_new, dims = 1:40))
+sil=CalculateSilhouette(cea_neuron, dims = 1:40)
+x=aggregate(sil[, 2], list(sil$cluster), mean)
+mean(x$width)
+```
+
+```{r}
+k=20
+resolution=2
+dim=1:40
+
+#cea_neuron=FindNeighbors(cea_neuron,dims = dim,k.param=k)
+#cea_neuron=FindClusters(cea_neuron,algorithm=2,resolution=resolution)
+
+cea_neuron_new$orig.ident=Idents(cea_neuron_new)
+a=list()
+b=list()
+
+x=1
+repeat {
+cea_neuron_sub=RandomSubsetData(cea_neuron_new, rate=0.9)
+cea_neuron_sub<- cea_neuron_sub%>%ScaleData()%>% FindNeighbors(dims = dim,k.param = k) %>% FindClusters(algorithm=2,resolution = resolution)
+
+a=append(a,list(cea_neuron_sub$orig.ident))
+b=append(b,list(cea_neuron_sub@active.ident))
+
+rm(cea_neuron_sub)
+x=x+1
+if (x == 21){
+break
+}
+}
+
+JaccardRainCloudPlot(a,b)+ geom_hline(yintercept = c(0.5), linetype = 2) 
+```
+
+
+#Write files
+```{r}
+save(cea_neuron_new_V2,file='/Users/wangy6/Desktop/DATA/CEA_RNAseq/CEA_2021_analysis/cea_neuron_v3_final_Dec2021.proj')
+```

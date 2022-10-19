@@ -1,0 +1,218 @@
+---
+title: "CEA_SCRBSeq"
+author: "Yuhan"
+date: "10/07/2021"
+output: html_notebook
+---
+```{r}
+library(Seurat)
+library(dplyr)
+library(scclusteval)
+library(ggplot2)
+library(tidyverse)
+library(cowplot)
+#library(clustree)
+packageVersion("Seurat")
+```
+
+
+# Import Metadata and examine
+```{r init, message=FALSE}
+# Load the cea metadata
+cea.meta <- read.table("/Users/wangy6/Desktop/DATA/CEA_RNAseq/CEA_2021_analysis/merged_sample_info.txt",sep="\t",as.is=F,row.names=1, header=FALSE)
+colnames(cea.meta)=c("Sample","Plate","Run","Row")
+```
+
+#Import count table and examine 
+```{r}
+#load gene expression data for first batch of cea seq, create ordered rownames
+cea.counts=read.table("/Users/wangy6/Desktop/DATA/CEA_RNAseq/CEA_2021_analysis/merged_counts.txt",sep="\t",as.is=T,row.names=1, header= TRUE)
+rownames(cea.counts)=make.unique(cea.counts[,1])
+cea.counts=cea.counts[,-1]
+#cea.counts <- cea.counts[ order(row.names(cea.counts)), ]
+head(cea.counts)
+tail(cea.counts)
+
+#remove ERCCs into separate matrix (epmty well subtraction not performed on this)
+cea.ercc.ids <- grep(pattern = "^ERCC-", x = rownames(x = cea.counts), value = TRUE)
+cea.ercc <- cea.counts[cea.ercc.ids,]
+head(cea.ercc)
+tail(cea.ercc)
+
+#cellular gene counts into separe matrix (epmty well subtraction IS performed on this)
+cea.not.ercc <- grep(pattern = "^ERCC-", x = rownames(x = cea.counts), value = FALSE)
+cea.genes <- cea.counts[-cea.not.ercc,]
+head(cea.genes)
+tail(cea.genes)
+class(cea.genes)
+
+```
+# GO TO "2_CEA_empty_well_munging.Rmd"
+# Perform empty well subtraction (see  empty well munging script) then proceed with modifying meta table
+```{r}
+head(cea.subtracted)
+subtracted.cea.ids = colnames(cea.subtracted)
+cea.meta.subtracted = cea.meta[subtracted.cea.ids,]
+```
+
+# write files to save them 
+```{r}
+write.csv(cea.subtracted, file = "/Users/wangy6/Desktop/DATA/CEA_RNAseq/CEA_2021_analysis/CEA_counts_subtracted.csv")
+write.csv(cea.meta.subtracted, file = "/Users/wangy6/Desktop/DATA/CEA_RNAseq/CEA_2021_analysis/CEA_meta_subtracted.csv")
+```
+
+# Reading in data from outside 
+```{r}
+cea.subtracted=read.table("/Users/wangy6/Desktop/DATA/CEA_RNAseq/CEA_2021_analysis/CEA_counts_subtracted.csv",sep=",",as.is=T,row.names=1, header= TRUE )
+head(cea.subtracted, n=20)
+
+cea.meta.subtracted=read.table("/Users/wangy6/Desktop/DATA/CEA_RNAseq/CEA_2021_analysis/CEA_meta_subtracted.csv",sep=",",as.is=T,row.names=1, header= TRUE )
+head(cea.meta.subtracted, n=20)
+```
+
+# Initialize new Seurat object with the new raw data aftr empty well subtraction.
+# Keep all genes expressed in >= 5 cells. Keep all cells with at least 200 detected genes
+```{r}
+cea <- CreateSeuratObject(counts  = cea.subtracted, meta.data=cea.meta.subtracted,min.cells = 5, min.features = 200, project = "CEA_SCRB")
+```
+
+# ID mito genes
+```{r}
+mito.genes.cea <- grep(pattern = "^mt-", x = rownames(x = cea@assays$RNA), value = TRUE)
+percent.mito.cea <- Matrix::colSums(cea@assays$RNA[mito.genes.cea, ])/Matrix::colSums(cea@assays$RNA)
+
+# AddMetaData adds columns to object@meta.data, and is a great place to stash QC stats
+cea <- AddMetaData(object = cea, metadata = percent.mito.cea, col.name = "percent.mito")
+```
+
+
+# violin plot for all cells 
+```{r}
+VlnPlot(cea, features = c("nFeature_RNA", "nCount_RNA", "percent.mito"), ncol = 3, pt.size = 0.5)
+```
+
+
+# QC plotting
+```{r}
+# GenePlot is typically used to visualize gene-gene relationships, but can
+# be used for anything calculated by the object, i.e. columns in
+# object@meta.data, PC scores etc.  Since there is a rare subset of cells
+# with an outlier level of high mitochondrial percentage and also low UMI
+# content, we filter these as well
+par(mfrow = c(1, 2))
+FeatureScatter(cea, feature1 = "nFeature_RNA", feature2 = "percent.mito")
+FeatureScatter(cea, feature1 = "nFeature_RNA", feature2 = "nCount_RNA")
+```
+
+
+
+
+```{r}
+# I filtered out cells that have unique gene counts over 7,500 or less than 1500
+# Note that low.thresholds and high.thresholds are used to define a 'gate'
+# -Inf and Inf should be used if you don't want a lower or upper threshold.
+cea <- subset(cea, subset = nFeature_RNA > 1500 & nFeature_RNA < 7500 & percent.mito < 0.055 & nCount_RNA < 2e+05)
+```
+
+
+```{r}
+VlnPlot(cea, features = c("nFeature_RNA", "nCount_RNA", "percent.mito"), ncol = 3)
+```
+
+### Normalizing the data
+
+```{r}
+cea <- NormalizeData(cea)
+```
+
+```{r}
+cea<- PercentageFeatureSet(cea,pattern = "^MT-", col.name = "percent.mt") %>% NormalizeData() %>% FindVariableFeatures(selection.method = "vst", nfeatures = 5000) %>% ScaleData(vars.to.regress = "percent.mt") %>% RunPCA() %>% FindNeighbors(dims = 1:40) %>% 
+RunUMAP(dims = 1:40, seed.use=42) %>% FindClusters(resolution=0.5)
+```
+```{r elbow_plot, fig.height=6, fig.width=10, warning=FALSE}
+ElbowPlot(cea,ndims=50)
+```
+# Finalize the parameters: k=25, resolution=0.6
+```{r}
+cea=FindNeighbors(cea,dims = 1:40,k.param=25)
+cea=FindClusters(cea,resolution=0.6)
+DimPlot(cea, reduction = "umap",label=TRUE)
+```
+# Vary k and resolution parameters to determine the optimal parameter for clustering
+```{r}
+k=25
+resolution=0.6
+
+cea=FindNeighbors(cea,dims = 1:40,k.param=k)
+cea=FindClusters(cea,algorithm=2,resolution=resolution)
+
+cea$orig.ident=Idents(cea)
+a=list()
+b=list()
+
+x=1
+repeat {
+cea_sub=RandomSubsetData(cea, rate=0.8)
+cea_sub<- cea_sub%>%ScaleData()%>% FindNeighbors(dims = 1:40,k.param = k) %>% FindClusters(algorithm=2,resolution = resolution)
+
+a=append(a,list(cea_sub$orig.ident))
+b=append(b,list(cea_sub@active.ident))
+
+rm(cea_sub)
+x=x+1
+if (x == 11){
+break
+}
+}
+
+JaccardRainCloudPlot(a,b)+ geom_hline(yintercept = c(0.5), linetype = 2) 
+```
+
+```{r,fig.height=5, fig.width=4.5}
+FeaturePlot(cea, reduction = "umap",features=c( "Snap25", "Syp","Map1b", "Tubb3", "Elavl2","Gad1","Neurod6","Slc17a7", "Lhx8","Lhx6","Aqp4", "Olig1","Olig2", "Opalin","Pdgfra","Ctss","Flt1","Pecam1","Lipe","Klkb1","Epas1","Esam","Krt18","Jchain"),pt.size=0.1)
+```
+
+# Remove non-neurons and neurons outside the CEA (Slc17a7 expressing): cluster 6 and cluster 9
+```{r}
+cea_neuron=subset(cea,idents=c('6','9'),invert = TRUE)
+```
+
+```{r}
+DimPlot(cea_neuron,reduction='umap')
+```
+#Write files
+```{r}
+save(cea_neuron,file="/Users/wangy6/Desktop/DATA/CEA_RNAseq/CEA_2021_analysis/cea_neuron_Oct2021.proj")
+save(cea,file="/Users/wangy6/Desktop/DATA/CEA_RNAseq/CEA_2021_analysis/cea_Oct2021.proj")
+```
+
+
+```{r}
+load("/Users/wangy6/Desktop/DATA/CEA_RNAseq/CEA_2021_analysis/cea_neuron_Oct2021.proj")
+load("/Users/wangy6/Desktop/DATA/CEA_RNAseq/CEA_2021_analysis/cea_Oct2021.proj")
+```
+
+
+
+# Build a classification hierarchy that places transcriptionally similar clusters adjacent on a tree
+```{r}
+cea <- BuildClusterTree(object = cea,reorder = FALSE, reorder.numeric = FALSE)
+```
+
+# Wilcox test based DGE for selection of marker genes
+```{r}
+
+# find markers for every cluster compared to all remaining cells, report only the positive ones
+cea.markers <- FindAllMarkers(object = cea, only.pos = FALSE, min.pct = 0.50, logfc.threshold=.55, min.diff.pct = .25, test.use = "wilcox")
+cea.markers %>% group_by(cluster) %>% top_n(20, avg_logFC)
+```
+
+
+```{r}
+cea.markers %>% group_by(cluster) %>% top_n(10, avg_logFC) -> top10.cea
+cea.markers %>% group_by(cluster) %>% top_n(5, avg_logFC) -> top5.cea
+cea.markers %>% group_by(cluster) %>% top_n(3, avg_logFC) -> top3.cea
+DoHeatmap(object = cea, genes.use = c(top10.cea$gene), slim.col.label = TRUE, use.scaled=TRUE, remove.key = TRUE, rotate.key = TRUE, cex.row=7, group.cex = 15, group.label.loc = "top")
+```
+
+#END --> GO TO "CEA_subtract_just_neurons"
